@@ -1,0 +1,71 @@
+﻿<Controls:MetroWindow x:Class="DCS_SR_Music.ConnectionWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+        Title="SR Music Client" Height="270" Width="480"
+        ResizeMode="CanMinimize"
+        BorderThickness="4"
+        SaveWindowPosition="False"
+        WindowStartupLocation="CenterScreen"
+        NonActiveWindowTitleBrush="{DynamicResource AccentColorBrush}"
+        NonActiveBorderBrush="{DynamicResource AccentColorBrush}">
+
+    <Grid>
+        <Label HorizontalContentAlignment="Center"
+               VerticalContentAlignment="Center"
+               FontSize="22"
+               Foreground="White"
+               Content="IP Address" 
+               Margin="60,28,256,165"/>
+
+        <Label HorizontalContentAlignment="Center"
+               VerticalContentAlignment="Center"
+               FontSize="22"
+               Foreground="White"
+               Content="Port"
+               Margin="256,28,60,165"/>
+
+        <TextBox Controls:TextBoxHelper.Watermark="Enter address..."
+                 Margin="60,73,256,130"
+                 FontSize="16"
+                 HorizontalContentAlignment="Center"
+                 VerticalContentAlignment="Center"
+                 IsEnabled="False"
+                 Text="127.0.0.1"
+                 x:Name="EnteredIP"/>
+
+        <TextBox Controls:TextBoxHelper.Watermark="Enter port..."
+                 Margin="256,73,60,130"
+                 FontSize="16"
+                 HorizontalContentAlignment="Center"
+                 VerticalContentAlignment="Center"
+                 x:Name="EnteredPort"/>
+
+        <Controls:ProgressRing HorizontalContentAlignment="Center"
+                               VerticalContentAlignment="Center"
+                               Height="30"
+                               Width="30"
+                               Margin="215,126,215,72"
+                               Foreground="White"
+                               IsActive="false"
+                               HorizontalAlignment="Stretch"
+                               x:Name="ConnectingRing"/>
+
+        <Label HorizontalContentAlignment="Center"
+               VerticalContentAlignment="Center"
+               FontSize="12"
+               FontStyle="Italic"
+               Foreground="White"
+               Margin="115,125,115,68"
+               x:Name="StatusLabel"/>
+
+        <Button Margin="158,181,158,22"
+                Style="{StaticResource RoundedAccentedButton}"
+                Content="Connect"
+                HorizontalContentAlignment="Center"
+                VerticalContentAlignment="Center"
+                Command="{Binding Path=ConnectCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Controls:MetroWindow}}}"
+                x:Name="ConnectButton"/>
+    </Grid>
+
+</Controls:MetroWindow>
