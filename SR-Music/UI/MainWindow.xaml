@@ -1,0 +1,1403 @@
+﻿<Controls:MetroWindow x:Class="DCS_SR_Music.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+        xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+        Title="SR Music Client" Height="540" Width="960"
+        ResizeMode="CanMinimize"
+        BorderThickness="4"
+        SaveWindowPosition="False"
+        WindowStartupLocation="CenterScreen"
+        NonActiveWindowTitleBrush="{DynamicResource AccentColorBrush}"
+        NonActiveBorderBrush="{DynamicResource AccentColorBrush}">
+
+    <Grid>
+        <Label  FontSize="28"
+                FontStyle="Italic"
+                Foreground="White"
+                Content="Stations" 
+                Margin="20,8,780,450"/>
+
+        <Label  FontSize="12"
+                FontStyle="Italic"
+                Foreground="White"
+                Content="Version 0.1.0 Alpha" 
+                Margin="10,460,740,10"
+                VerticalContentAlignment="Center"/>
+
+        <Rectangle Stroke="White" StrokeThickness="1" Margin="10, 51, 668, 51" Panel.ZIndex="1"/>
+
+        <TabControl x:Name="StationTabs"
+                    TabStripPlacement="Left"
+                    Margin="20, 50, 10, 50"
+                    Padding="0">
+
+            <TabItem Name="Radio0" 
+                     Style="{StaticResource StationTabItem}"
+                     Margin="0,10,0,-10">
+
+                <TabItem.Header>
+                    <Grid>
+                        <Label Content="{Binding Text,ElementName=StationName0,UpdateSourceTrigger=PropertyChanged}"
+                               VerticalContentAlignment="Center"
+                               Margin="-7,0,61,0"/>
+                        <iconPacks:PackIconFontAwesome x:Name="PlayStatusIcon0"
+                                                       Kind="VolumeDownSolid" 
+                                                       VerticalAlignment="Center" 
+                                                       HorizontalAlignment="Center"
+                                                       Visibility="Hidden"
+                                                       Foreground="White"
+                                                       Width="11"
+                                                       Height="11"
+                                                       Margin="0,0,210,55"/>
+                        <Label Content="{Binding ElementName=Slider0, Path=Value}"
+                               ContentStringFormat="{}{0:0.000}"
+                               FontSize="14"
+                               Foreground="White"
+                               HorizontalContentAlignment="Center"
+                               Margin="170,2,-10,29"/>
+                        <Label x:Name="TabModulation0"
+                               Content="{Binding ElementName=Modulation0, Path=OffLabel}"
+                               FontSize="14"
+                               Foreground="White"
+                               HorizontalContentAlignment="Center"
+                               Margin="178,30,0,0"/>
+                    </Grid>
+                </TabItem.Header>
+
+                <TabControl x:Name="Radio0panels"
+                            Margin="20, -40, 0, 0" 
+                            BorderThickness="1"
+                            BorderBrush="White">
+
+                    <TabItem x:Name="Settings0" 
+                             Header="Settings"
+                             Style="{StaticResource ScreenTabItem}"
+                             Height="40"
+                             Width="100" 
+                             Margin="548,0,-548,0">
+
+                        <Grid>
+                            <Label  FontSize="18"
+                                    Foreground="White"
+                                    Content="Station Name :"
+                                    Height="50"
+                                    VerticalContentAlignment="Center"
+                                    HorizontalContentAlignment="Center"
+                                    Margin="70,24,438,324"/>
+
+                            <TextBox   x:Name="StationName0"
+                                       FontSize="18"
+                                       Text="Radio 1"
+                                       TextChanged="StationName0_TextChanged"
+                                       MaxLength="12"
+                                       Foreground="{DynamicResource AccentColorBrush}"
+                                       VerticalContentAlignment="Center"
+                                       HorizontalContentAlignment="Center"
+                                       Margin="243,29,235,326.5"/>
+
+                            <Label  FontSize="18"
+                                    Foreground="White"
+                                    Content="Music Directory :"
+                                    Height="50"
+                                    VerticalContentAlignment="Center"
+                                    HorizontalContentAlignment="Center"
+                                    Margin="70,94,423,236.5"/>
+
+                            <TextBox x:Name="Directory0"
+                                     FontSize="15"
+                                     Foreground="{DynamicResource AccentColorBrush}"
+                                     VerticalContentAlignment="Center"
+                                     IsReadOnly="True"
+                                     Margin="243,106,151,246.5"/>
+
+                            <Button Margin="506,116,80,251.5"
+                                    Style="{StaticResource RoundedAccentedButton}"
+                                    Content="Browse"
+                                    FontSize="10"
+                                    HorizontalContentAlignment="Center"
+                                    VerticalContentAlignment="Center"
+                                    Click="DirectoryBrowse0_Click"
+                                    x:Name="DirectoryBrowse0"/>
+
+                            <Label  FontSize="18"
+                                    Foreground="White"
+                                    Content="Modulation :"
+                                    Height="50"
+                                    VerticalContentAlignment="Center"
+                                    HorizontalContentAlignment="Center"
+                                    Margin="70,164,452,170.5"/>
+
+                            <Controls:ToggleSwitch x:Name="Modulation0"
+                                                   OnLabel="FM" 
+                                                   OffLabel="AM"
+                                                   FontSize="20"
+                                                   Foreground="{DynamicResource AccentColorBrush}"
+                                                   OffSwitchBrush="{DynamicResource AccentColorBrush}"
+                                                   OnSwitchBrush="{DynamicResource AccentColorBrush}"
+                                                   IsCheckedChanged="Modulation0_IsCheckedChanged"
+                                                   VerticalAlignment="Center"
+                                                   Margin="243,176,218,184.5"/>
+
+                            <Label  FontSize="18"
+                                    Foreground="White"
+                                    Content="Frequency :"
+                                    Height="50"
+                                    VerticalContentAlignment="Center"
+                                    HorizontalContentAlignment="Center"
+                                    Margin="70,234,464,114"/>
+
+                            <Label  x:Name="Frequency0"
+                                    FontSize="20"
+                                    Foreground="{DynamicResource AccentColorBrush}"
+                                    Content="{Binding ElementName=Slider0, Path=Value}"
+                                    ContentStringFormat="{}{0:0.000}"
+                                    VerticalContentAlignment="Center"
+                                    Margin="238,240,318,119.5"/>
+
+                            <Label  FontSize="18"
+                                    Foreground="White"
+                                    Content="MHz"
+                                    VerticalContentAlignment="Center"
+                                    HorizontalContentAlignment="Center"
+                                    Margin="357,240,229,117.5"/>
+
+                            <Slider x:Name="Slider0"
+                                    Margin="80,298,80,62"
+                                    Style="{DynamicResource FreqSliderStyle}"
+                                    TickPlacement="None"
+                                    TickFrequency=".100"
+                                    IsSnapToTickEnabled="True"
+                                    Value="200.000"
+                                    ValueChanged="Slider0_ValueChanged"
+                                    Minimum="0"
+                                    Maximum="400"
+                                    SmallChange="0.1"
+                                    LargeChange="1"/>
+
+                            <TickBar x:Name="BottomTick"
+                                     Fill="White"
+                                     Placement="Bottom"
+                                     TickFrequency="5"
+                                     Margin="80,333,80,47"/>
+
+                            <Label  FontSize="16"
+                                    Foreground="White"
+                                    Content="0"
+                                    VerticalContentAlignment="Center"
+                                    HorizontalContentAlignment="Center"
+                                    Margin="50,347,529,16"/>
+
+                            <Label  FontSize="16"
+                                    Foreground="White"
+                                    Content="100"
+                                    VerticalContentAlignment="Center"
+                                    HorizontalContentAlignment="Center"
+                                    Margin="171,343,409,21"/>
+
+                            <Label  FontSize="16"
+                                    Foreground="White"
+                                    Content="200"
+                                    VerticalContentAlignment="Center"
+                                    HorizontalContentAlignment="Center"
+                                    Margin="286,343,286,21"/>
+
+                            <Label  FontSize="16"
+                                    Foreground="White"
+                                    Content="300"
+                                    VerticalContentAlignment="Center"
+                                    HorizontalContentAlignment="Center"
+                                    Margin="409,343,171,21"/>
+
+                            <Label  FontSize="16"
+                                    Foreground="White"
+                                    Content="400"
+                                    VerticalContentAlignment="Center"
+                                    HorizontalContentAlignment="Center"
+                                    Margin="528,347,52,17"/>
+                        </Grid>
+                    </TabItem>
+
+                    <TabItem x:Name="Queue0" 
+                             Header="Queue"
+                             Style="{StaticResource ScreenTabItem}"
+                             IsEnabled="False"
+                             Height="40"
+                             Width="100" 
+                             Margin="346,0,-346,0">
+
+                        <Grid>
+                            <Label FontSize="28"
+                                   HorizontalContentAlignment="Center"
+                                   VerticalContentAlignment="Center"
+                                   Content="Not Yet Implemented"
+                                   Margin="90,160,90,182"/>
+                        </Grid>
+                    </TabItem>
+
+                    <TabItem x:Name="Player0"
+                             Header="Player"
+                             Style="{StaticResource ScreenTabItem}"
+                             Height="40"
+                             Width="100" 
+                             Margin="144,0,-144,0">
+
+                        <Grid>
+                            <Label x:Name="TrackLabel0"
+                                   Visibility="Collapsed"
+                                   FontSize="18"
+                                   Foreground="White"
+                                   Opacity=".8"
+                                   HorizontalContentAlignment="Center"
+                                   VerticalContentAlignment="Center"
+                                   Content="Track:" 
+                                   Margin="32,37,543,308"/>
+
+                            <Label x:Name="TrackNumber0"
+                                   Visibility="Collapsed"
+                                   FontSize="18"
+                                   Foreground="White"
+                                   Opacity=".8"
+                                   VerticalContentAlignment="Center"
+                                   Margin="98,37,357,308"/>
+
+                            <Label x:Name="Timer0"
+                                   Visibility="Collapsed"
+                                   FontSize="20"
+                                   Foreground="White"
+                                   Opacity=".8"
+                                   VerticalContentAlignment="Center"
+                                   HorizontalContentAlignment="Center"
+                                   Content="00:00"
+                                   Margin="518,36,10,309"/>
+
+                            <Label x:Name="TrackTitle0"
+                                   FontSize="18"
+                                   Background="{DynamicResource TabSelectedColor}"
+                                   BorderBrush="{DynamicResource AccentColorBrush}"
+                                   BorderThickness="1"
+                                   HorizontalContentAlignment="Center"
+                                   VerticalContentAlignment="Center"
+                                   Margin="89,130,91,212"/>
+
+                            <Button x:Name="PlayButton0"
+                                    Style="{StaticResource PlayPauseButton}"
+                                    HorizontalContentAlignment="Center"
+                                    VerticalContentAlignment="Center"
+                                    Click="PlayButton0_Click"
+                                    Margin="278,240,278,75">
+
+                                <iconPacks:PackIconFontAwesome x:Name="PlayIcon0"
+                                                               Kind="PlaySolid" 
+                                                               VerticalAlignment="Center" 
+                                                               HorizontalAlignment="Center"
+                                                               Foreground="{DynamicResource AccentColorBrush}"
+                                                               Width="25"
+                                                               Height="25"/>
+                            </Button>
+
+                            <Button x:Name="SkipForward0"
+                                    Style="{StaticResource SkipButtons}"
+                                    BorderBrush="Transparent"
+                                    Width="50" 
+                                    Height="50"
+                                    HorizontalContentAlignment="Center"
+                                    VerticalContentAlignment="Center"
+                                    Click="SkipForward0_Click"
+                                    Margin="384,254,202,91">
+
+                                <iconPacks:PackIconFontAwesome Kind="StepForwardSolid" 
+                                                               VerticalAlignment="Center" 
+                                                               HorizontalAlignment="Center"
+                                                               Width="20"
+                                                               Height="20"/>
+                            </Button>
+
+                            <Button x:Name="SkipBackward0"
+                                    Style="{StaticResource SkipButtons}"
+                                    BorderBrush="Transparent"
+                                    Width="50" 
+                                    Height="50"
+                                    HorizontalContentAlignment="Center"
+                                    VerticalContentAlignment="Center"
+                                    Click="SkipBackward0_Click"
+                                    Margin="202,254,384,91">
+
+                                <iconPacks:PackIconFontAwesome Kind="StepBackwardSolid" 
+                                                                   VerticalAlignment="Center" 
+                                                                   HorizontalAlignment="Center"
+                                                                   Width="20"
+                                                                   Height="20"/>
+                            </Button>
+
+                            <ToggleButton x:Name="Shuffle0"
+                                          Style="{StaticResource PlayerToggleButtons}"
+                                          BorderBrush="Transparent"
+                                          Width="50" 
+                                          Height="50"
+                                          HorizontalContentAlignment="Center"
+                                          VerticalContentAlignment="Center" Margin="133,254,453,91"
+                                          IsChecked="True"
+                                          IsEnabled="False">
+
+                                <iconPacks:PackIconFontAwesome Kind="RandomSolid" 
+                                                               VerticalAlignment="Center" 
+                                                               HorizontalAlignment="Center"
+                                                               Width="20"
+                                                               Height="20"/>
+                            </ToggleButton>
+
+                            <ToggleButton x:Name="Repeat0"
+                                          Style="{StaticResource PlayerToggleButtons}"
+                                          BorderBrush="Transparent"
+                                          Width="50" 
+                                          Height="50"
+                                          Click="Repeat0_Click"
+                                          HorizontalContentAlignment="Center"
+                                          VerticalContentAlignment="Center" Margin="453,254,133,91">
+
+                                <iconPacks:PackIconFontAwesome Kind="RedoAltSolid" 
+                                                               VerticalAlignment="Center" 
+                                                               HorizontalAlignment="Center"
+                                                               Width="20"
+                                                               Height="20"/>
+                            </ToggleButton>
+
+                        </Grid>
+
+                    </TabItem>
+
+                </TabControl>
+
+            </TabItem>
+
+            <TabItem Name="Radio1" 
+                     Style="{StaticResource StationTabItem}"
+                     Margin="0,20,0,-20">
+
+                <TabItem.Header>
+                    <Grid>
+                        <Label Content="{Binding Text,ElementName=StationName1,UpdateSourceTrigger=PropertyChanged}"
+                               VerticalContentAlignment="Center"
+                               Margin="-7,0,61,0"/>
+                        <iconPacks:PackIconFontAwesome x:Name="PlayStatusIcon1"
+                                                       Kind="VolumeDownSolid" 
+                                                       VerticalAlignment="Center" 
+                                                       HorizontalAlignment="Center"
+                                                       Visibility="Hidden"
+                                                       Foreground="White"
+                                                       Width="11"
+                                                       Height="11"
+                                                       Margin="0,0,210,55"/>
+                        <Label Content="{Binding ElementName=Slider1, Path=Value}"
+                               ContentStringFormat="{}{0:0.000}"
+                               FontSize="14"
+                               Foreground="White"
+                               HorizontalContentAlignment="Center"
+                               Margin="170,2,-10,29"/>
+                        <Label x:Name="TabModulation1"
+                               Content="{Binding ElementName=Modulation1, Path=OffLabel}"
+                               FontSize="14"
+                               Foreground="White"
+                               HorizontalContentAlignment="Center"
+                               Margin="178,30,0,0"/>
+                    </Grid>
+                </TabItem.Header>
+
+                <TabControl x:Name="Radio1panels"
+                            Margin="20, -40, 0, 0" 
+                            BorderThickness="1"
+                            BorderBrush="White">
+
+                    <TabItem x:Name="Settings1" 
+                             Header="Settings"
+                             Style="{StaticResource ScreenTabItem}"
+                             Height="40"
+                             Width="100" 
+                             Margin="548,0,-548,0">
+
+                        <Grid>
+                            <Label  FontSize="18"
+                                    Foreground="White"
+                                    Content="Station Name :"
+                                    Height="50"
+                                    VerticalContentAlignment="Center"
+                                    HorizontalContentAlignment="Center"
+                                    Margin="70,24,438,324"/>
+
+                            <TextBox   x:Name="StationName1"
+                                       FontSize="18"
+                                       Text="Radio 2"
+                                       TextChanged="StationName1_TextChanged"
+                                       MaxLength="12"
+                                       Foreground="{DynamicResource AccentColorBrush}"
+                                       VerticalContentAlignment="Center"
+                                       HorizontalContentAlignment="Center"
+                                       Margin="243,29,235,326.5"/>
+
+                            <Label  FontSize="18"
+                                    Foreground="White"
+                                    Content="Music Directory :"
+                                    Height="50"
+                                    VerticalContentAlignment="Center"
+                                    HorizontalContentAlignment="Center"
+                                    Margin="70,94,423,236.5"/>
+
+                            <TextBox x:Name="Directory1"
+                                     FontSize="15"
+                                     Foreground="{DynamicResource AccentColorBrush}"
+                                     VerticalContentAlignment="Center"
+                                     IsReadOnly="True"
+                                     Margin="243,106,151,246.5"/>
+
+                            <Button Margin="506,116,80,251.5"
+                                    Style="{StaticResource RoundedAccentedButton}"
+                                    Content="Browse"
+                                    FontSize="10"
+                                    HorizontalContentAlignment="Center"
+                                    VerticalContentAlignment="Center"
+                                    Click="DirectoryBrowse1_Click"
+                                    x:Name="DirectoryBrowse1" />
+
+                            <Label  FontSize="18"
+                                    Foreground="White"
+                                    Content="Modulation :"
+                                    Height="50"
+                                    VerticalContentAlignment="Center"
+                                    HorizontalContentAlignment="Center"
+                                    Margin="70,164,452,170.5"/>
+
+                            <Controls:ToggleSwitch x:Name="Modulation1"
+                                                   OnLabel="FM" 
+                                                   OffLabel="AM"
+                                                   FontSize="20"
+                                                   Foreground="{DynamicResource AccentColorBrush}"
+                                                   OffSwitchBrush="{DynamicResource AccentColorBrush}"
+                                                   OnSwitchBrush="{DynamicResource AccentColorBrush}"
+                                                   IsCheckedChanged="Modulation1_IsCheckedChanged"
+                                                   VerticalAlignment="Center"
+                                                   Margin="243,176,218,184.5"/>
+
+                            <Label  FontSize="18"
+                                    Foreground="White"
+                                    Content="Frequency :"
+                                    Height="50"
+                                    VerticalContentAlignment="Center"
+                                    HorizontalContentAlignment="Center"
+                                    Margin="70,234,464,114"/>
+
+                            <Label  x:Name="Frequency1"
+                                    FontSize="20"
+                                    Foreground="{DynamicResource AccentColorBrush}"
+                                    Content="{Binding ElementName=Slider1, Path=Value}"
+                                    ContentStringFormat="{}{0:0.000}"
+                                    VerticalContentAlignment="Center"
+                                    Margin="238,240,318,119.5"/>
+
+                            <Label  FontSize="18"
+                                    Foreground="White"
+                                    Content="MHz"
+                                    VerticalContentAlignment="Center"
+                                    HorizontalContentAlignment="Center"
+                                    Margin="357,240,229,117.5"/>
+
+                            <Slider x:Name="Slider1"
+                                    Margin="80,298,80,62"
+                                    Style="{DynamicResource FreqSliderStyle}"
+                                    TickPlacement="None"
+                                    TickFrequency=".100"
+                                    IsSnapToTickEnabled="True"
+                                    Value="201.000"
+                                    ValueChanged="Slider1_ValueChanged"
+                                    Minimum="0"
+                                    Maximum="400"
+                                    SmallChange="0.1"
+                                    LargeChange="1"/>
+
+                            <TickBar x:Name="BottomTick1"
+                                     Fill="White"
+                                     Placement="Bottom"
+                                     TickFrequency="5"
+                                     Margin="80,333,80,47"/>
+
+                            <Label  FontSize="16"
+                                    Foreground="White"
+                                    Content="0"
+                                    VerticalContentAlignment="Center"
+                                    HorizontalContentAlignment="Center"
+                                    Margin="50,347,529,16"/>
+
+                            <Label  FontSize="16"
+                                    Foreground="White"
+                                    Content="100"
+                                    VerticalContentAlignment="Center"
+                                    HorizontalContentAlignment="Center"
+                                    Margin="171,343,409,21"/>
+
+                            <Label  FontSize="16"
+                                    Foreground="White"
+                                    Content="200"
+                                    VerticalContentAlignment="Center"
+                                    HorizontalContentAlignment="Center"
+                                    Margin="286,343,286,21"/>
+
+                            <Label  FontSize="16"
+                                    Foreground="White"
+                                    Content="300"
+                                    VerticalContentAlignment="Center"
+                                    HorizontalContentAlignment="Center"
+                                    Margin="409,343,171,21"/>
+
+                            <Label  FontSize="16"
+                                    Foreground="White"
+                                    Content="400"
+                                    VerticalContentAlignment="Center"
+                                    HorizontalContentAlignment="Center"
+                                    Margin="528,347,52,17"/>
+                        </Grid>
+                    </TabItem>
+
+                    <TabItem Name="Queue1" 
+                             Header="Queue"
+                             Style="{StaticResource ScreenTabItem}"
+                             IsEnabled="False"
+                             Height="40"
+                             Width="100" 
+                             Margin="346,0,-346,0">
+
+                        <Grid>
+                            <Label FontSize="28"
+                                       HorizontalContentAlignment="Center"
+                                       VerticalContentAlignment="Center"
+                                       Content="Not Yet Implemented"
+                                       Margin="90,160,90,182"/>
+                        </Grid>
+                    </TabItem>
+
+                    <TabItem Name="Player1" 
+                             Header="Player"
+                             Style="{StaticResource ScreenTabItem}"
+                             Height="40"
+                             Width="100" 
+                             Margin="144,0,-144,0">
+
+                        <Grid>
+                            <Label x:Name="TrackLabel1"
+                                   Visibility="Collapsed"
+                                   FontSize="18"
+                                   Foreground="White"
+                                   Opacity=".8"
+                                   HorizontalContentAlignment="Center"
+                                   VerticalContentAlignment="Center"
+                                   Content="Track:" 
+                                   Margin="32,37,543,308"/>
+
+                            <Label x:Name="TrackNumber1"
+                                   Visibility="Collapsed"
+                                   FontSize="18"
+                                   Foreground="White"
+                                   Opacity=".8"
+                                   VerticalContentAlignment="Center"
+                                   Margin="98,37,357,308"/>
+
+                            <Label x:Name="Timer1"
+                                   Visibility="Collapsed"
+                                   FontSize="20"
+                                   Foreground="White"
+                                   Opacity=".8"
+                                   VerticalContentAlignment="Center"
+                                   HorizontalContentAlignment="Center"
+                                   Content="00:00"
+                                   Margin="518,36,10,309"/>
+
+                            <Label x:Name="TrackTitle1"
+                                   FontSize="18"
+                                   Background="{DynamicResource TabSelectedColor}"
+                                   BorderBrush="{DynamicResource AccentColorBrush}"
+                                   BorderThickness="1"
+                                   HorizontalContentAlignment="Center"
+                                   VerticalContentAlignment="Center"
+                                   Margin="89,130,91,212"/>
+
+                            <Button x:Name="PlayButton1"
+                                    Style="{StaticResource PlayPauseButton}"
+                                    HorizontalContentAlignment="Center"
+                                    VerticalContentAlignment="Center"
+                                    Click="PlayButton1_Click"
+                                    Margin="278,240,278,75">
+
+                                <iconPacks:PackIconFontAwesome x:Name="PlayIcon1"
+                                                               Kind="PlaySolid" 
+                                                               VerticalAlignment="Center" 
+                                                               HorizontalAlignment="Center"
+                                                               Foreground="{DynamicResource AccentColorBrush}"
+                                                               Width="25"
+                                                               Height="25"/>
+                            </Button>
+
+                            <Button x:Name="SkipForward1"
+                                    Style="{StaticResource SkipButtons}"
+                                    BorderBrush="Transparent"
+                                    Width="50" 
+                                    Height="50"
+                                    HorizontalContentAlignment="Center"
+                                    VerticalContentAlignment="Center"
+                                    Click="SkipForward1_Click"
+                                    Margin="384,254,202,91">
+
+                                <iconPacks:PackIconFontAwesome Kind="StepForwardSolid" 
+                                                               VerticalAlignment="Center" 
+                                                               HorizontalAlignment="Center"
+                                                               Width="20"
+                                                               Height="20"/>
+                            </Button>
+
+                            <Button x:Name="SkipBackward1"
+                                    Style="{StaticResource SkipButtons}"
+                                    BorderBrush="Transparent"
+                                    Width="50" 
+                                    Height="50"
+                                    HorizontalContentAlignment="Center"
+                                    VerticalContentAlignment="Center"
+                                    Click="SkipBackward1_Click"
+                                    Margin="202,254,384,91">
+
+                                <iconPacks:PackIconFontAwesome Kind="StepBackwardSolid" 
+                                                                   VerticalAlignment="Center" 
+                                                                   HorizontalAlignment="Center"
+                                                                   Width="20"
+                                                                   Height="20"/>
+                            </Button>
+
+                            <ToggleButton x:Name="Shuffle1"
+                                          Style="{StaticResource PlayerToggleButtons}"
+                                          BorderBrush="Transparent"
+                                          Width="50" 
+                                          Height="50"
+                                          HorizontalContentAlignment="Center"
+                                          VerticalContentAlignment="Center" Margin="133,254,453,91"
+                                          IsChecked="True"
+                                          IsEnabled="False">
+
+                                <iconPacks:PackIconFontAwesome Kind="RandomSolid" 
+                                                               VerticalAlignment="Center" 
+                                                               HorizontalAlignment="Center"
+                                                               Width="20"
+                                                               Height="20"/>
+                            </ToggleButton>
+
+                            <ToggleButton x:Name="Repeat1"
+                                          Style="{StaticResource PlayerToggleButtons}"
+                                          BorderBrush="Transparent"
+                                          Width="50" 
+                                          Height="50"
+                                          Click="Repeat1_Click"
+                                          HorizontalContentAlignment="Center"
+                                          VerticalContentAlignment="Center" Margin="453,254,133,91">
+
+                                <iconPacks:PackIconFontAwesome Kind="RedoAltSolid" 
+                                                               VerticalAlignment="Center" 
+                                                               HorizontalAlignment="Center"
+                                                               Width="20"
+                                                               Height="20"/>
+                            </ToggleButton>
+
+                        </Grid>
+
+                    </TabItem>
+
+                </TabControl>
+
+            </TabItem>
+
+            <TabItem Name="Radio2" 
+                     Style="{StaticResource StationTabItem}"
+                     Margin="0,30,0,-30">
+
+                <TabItem.Header>
+                    <Grid>
+                        <Label Content="{Binding Text,ElementName=StationName2,UpdateSourceTrigger=PropertyChanged}"
+                               VerticalContentAlignment="Center"
+                               Margin="-7,0,61,0"/>
+                        <iconPacks:PackIconFontAwesome x:Name="PlayStatusIcon2"
+                                                       Kind="VolumeDownSolid" 
+                                                       VerticalAlignment="Center" 
+                                                       HorizontalAlignment="Center"
+                                                       Visibility="Hidden"
+                                                       Foreground="White"
+                                                       Width="11"
+                                                       Height="11"
+                                                       Margin="0,0,210,55"/>
+                        <Label Content="{Binding ElementName=Slider2, Path=Value}"
+                               ContentStringFormat="{}{0:0.000}"
+                               FontSize="14"
+                               Foreground="White"
+                               HorizontalContentAlignment="Center"
+                               Margin="170,2,-10,29"/>
+                        <Label x:Name="TabModulation2"
+                               Content="{Binding ElementName=Modulation2, Path=OffLabel}"
+                               FontSize="14"
+                               Foreground="White"
+                               HorizontalContentAlignment="Center"
+                               Margin="178,30,0,0"/>
+                    </Grid>
+                </TabItem.Header>
+
+                <TabControl x:Name="Radio2panels"
+                            Margin="20, -40, 0, 0" 
+                            BorderThickness="1"
+                            BorderBrush="White">
+
+                    <TabItem x:Name="Settings2" 
+                             Header="Settings"
+                             Style="{StaticResource ScreenTabItem}"
+                             Height="40"
+                             Width="100" 
+                             Margin="548,0,-548,0">
+
+                        <Grid>
+                            <Label  FontSize="18"
+                                    Foreground="White"
+                                    Content="Station Name :"
+                                    Height="50"
+                                    VerticalContentAlignment="Center"
+                                    HorizontalContentAlignment="Center"
+                                    Margin="70,24,438,324"/>
+
+                            <TextBox   x:Name="StationName2"
+                                       FontSize="18"
+                                       Text="Radio 3"
+                                       TextChanged="StationName2_TextChanged"
+                                       MaxLength="12"
+                                       Foreground="{DynamicResource AccentColorBrush}"
+                                       VerticalContentAlignment="Center"
+                                       HorizontalContentAlignment="Center"
+                                       Margin="243,29,235,326.5"/>
+
+                            <Label  FontSize="18"
+                                    Foreground="White"
+                                    Content="Music Directory :"
+                                    Height="50"
+                                    VerticalContentAlignment="Center"
+                                    HorizontalContentAlignment="Center"
+                                    Margin="70,94,423,236.5"/>
+
+                            <TextBox x:Name="Directory2"
+                                     FontSize="15"
+                                     Foreground="{DynamicResource AccentColorBrush}"
+                                     VerticalContentAlignment="Center"
+                                     IsReadOnly="True"
+                                     Margin="243,106,151,246.5"/>
+
+                            <Button Margin="506,116,80,251.5"
+                                    Style="{StaticResource RoundedAccentedButton}"
+                                    Content="Browse"
+                                    FontSize="10"
+                                    HorizontalContentAlignment="Center"
+                                    VerticalContentAlignment="Center"
+                                    Click="DirectoryBrowse2_Click"
+                                    x:Name="DirectoryBrowse2" />
+
+                            <Label  FontSize="18"
+                                    Foreground="White"
+                                    Content="Modulation :"
+                                    Height="50"
+                                    VerticalContentAlignment="Center"
+                                    HorizontalContentAlignment="Center"
+                                    Margin="70,164,452,170.5"/>
+
+                            <Controls:ToggleSwitch x:Name="Modulation2"
+                                                   OnLabel="FM" 
+                                                   OffLabel="AM"
+                                                   FontSize="20"
+                                                   Foreground="{DynamicResource AccentColorBrush}"
+                                                   OffSwitchBrush="{DynamicResource AccentColorBrush}"
+                                                   OnSwitchBrush="{DynamicResource AccentColorBrush}"
+                                                   IsCheckedChanged="Modulation2_IsCheckedChanged"
+                                                   VerticalAlignment="Center"
+                                                   Margin="243,176,218,184.5"/>
+
+                            <Label  FontSize="18"
+                                    Foreground="White"
+                                    Content="Frequency :"
+                                    Height="50"
+                                    VerticalContentAlignment="Center"
+                                    HorizontalContentAlignment="Center"
+                                    Margin="70,234,464,114"/>
+
+                            <Label  x:Name="Frequency2"
+                                    FontSize="20"
+                                    Foreground="{DynamicResource AccentColorBrush}"
+                                    Content="{Binding ElementName=Slider2, Path=Value}"
+                                    ContentStringFormat="{}{0:0.000}"
+                                    VerticalContentAlignment="Center"
+                                    Margin="238,240,318,119.5"/>
+
+                            <Label  FontSize="18"
+                                    Foreground="White"
+                                    Content="MHz"
+                                    VerticalContentAlignment="Center"
+                                    HorizontalContentAlignment="Center"
+                                    Margin="357,240,229,117.5"/>
+
+                            <Slider x:Name="Slider2"
+                                    Margin="80,298,80,62"
+                                    Style="{DynamicResource FreqSliderStyle}"
+                                    TickPlacement="None"
+                                    TickFrequency=".100"
+                                    IsSnapToTickEnabled="True"
+                                    Value="202.000"
+                                    ValueChanged="Slider2_ValueChanged"
+                                    Minimum="0"
+                                    Maximum="400"
+                                    SmallChange="0.1"
+                                    LargeChange="1"/>
+
+                            <TickBar x:Name="BottomTick2"
+                                     Fill="White"
+                                     Placement="Bottom"
+                                     TickFrequency="5"
+                                     Margin="80,333,80,47"/>
+
+                            <Label  FontSize="16"
+                                    Foreground="White"
+                                    Content="0"
+                                    VerticalContentAlignment="Center"
+                                    HorizontalContentAlignment="Center"
+                                    Margin="50,347,529,16"/>
+
+                            <Label  FontSize="16"
+                                    Foreground="White"
+                                    Content="100"
+                                    VerticalContentAlignment="Center"
+                                    HorizontalContentAlignment="Center"
+                                    Margin="171,343,409,21"/>
+
+                            <Label  FontSize="16"
+                                    Foreground="White"
+                                    Content="200"
+                                    VerticalContentAlignment="Center"
+                                    HorizontalContentAlignment="Center"
+                                    Margin="286,343,286,21"/>
+
+                            <Label  FontSize="16"
+                                    Foreground="White"
+                                    Content="300"
+                                    VerticalContentAlignment="Center"
+                                    HorizontalContentAlignment="Center"
+                                    Margin="409,343,171,21"/>
+
+                            <Label  FontSize="16"
+                                    Foreground="White"
+                                    Content="400"
+                                    VerticalContentAlignment="Center"
+                                    HorizontalContentAlignment="Center"
+                                    Margin="528,347,52,17"/>
+                        </Grid>
+                    </TabItem>
+
+                    <TabItem Name="Queue2" 
+                             Header="Queue"
+                             Style="{StaticResource ScreenTabItem}"
+                             IsEnabled="False"
+                             Height="40"
+                             Width="100" 
+                             Margin="346,0,-346,0">
+
+                        <Grid>
+                            <Label FontSize="28"
+                                   HorizontalContentAlignment="Center"
+                                   VerticalContentAlignment="Center"
+                                   Content="Not Yet Implemented"
+                                   Margin="90,160,90,182"/>
+                        </Grid>
+                    </TabItem>
+
+                    <TabItem Name="Player2" 
+                             Header="Player"
+                             Style="{StaticResource ScreenTabItem}"
+                             Height="40"
+                             Width="100" 
+                             Margin="144,0,-144,0">
+
+                        <Grid>
+                            <Label x:Name="TrackLabel2"
+                                   Visibility="Collapsed"
+                                   FontSize="18"
+                                   Foreground="White"
+                                   Opacity=".8"
+                                   HorizontalContentAlignment="Center"
+                                   VerticalContentAlignment="Center"
+                                   Content="Track:" 
+                                   Margin="32,37,543,308"/>
+
+                            <Label x:Name="TrackNumber2"
+                                   Visibility="Collapsed"
+                                   FontSize="18"
+                                   Foreground="White"
+                                   Opacity=".8"
+                                   VerticalContentAlignment="Center"
+                                   Margin="98,37,357,308"/>
+
+                            <Label x:Name="Timer2"
+                                   Visibility="Collapsed"
+                                   FontSize="20"
+                                   Foreground="White"
+                                   Opacity=".8"
+                                   VerticalContentAlignment="Center"
+                                   HorizontalContentAlignment="Center"
+                                   Content="00:00"
+                                   Margin="518,36,10,309"/>
+
+                            <Label x:Name="TrackTitle2"
+                                   FontSize="18"
+                                   Background="{DynamicResource TabSelectedColor}"
+                                   BorderBrush="{DynamicResource AccentColorBrush}"
+                                   BorderThickness="1"
+                                   HorizontalContentAlignment="Center"
+                                   VerticalContentAlignment="Center"
+                                   Margin="89,130,91,212"/>
+
+                            <Button x:Name="PlayButton2"
+                                    Style="{StaticResource PlayPauseButton}"
+                                    HorizontalContentAlignment="Center"
+                                    VerticalContentAlignment="Center"
+                                    Click="PlayButton2_Click"
+                                    Margin="278,240,278,75">
+
+                                <iconPacks:PackIconFontAwesome x:Name="PlayIcon2"
+                                                               Kind="PlaySolid" 
+                                                               VerticalAlignment="Center" 
+                                                               HorizontalAlignment="Center"
+                                                               Foreground="{DynamicResource AccentColorBrush}"
+                                                               Width="25"
+                                                               Height="25"/>
+                            </Button>
+
+                            <Button x:Name="SkipForward2"
+                                    Style="{StaticResource SkipButtons}"
+                                    BorderBrush="Transparent"
+                                    Width="50" 
+                                    Height="50"
+                                    HorizontalContentAlignment="Center"
+                                    VerticalContentAlignment="Center"
+                                    Click="SkipForward2_Click"
+                                    Margin="384,254,202,91">
+
+                                <iconPacks:PackIconFontAwesome Kind="StepForwardSolid" 
+                                                               VerticalAlignment="Center" 
+                                                               HorizontalAlignment="Center"
+                                                               Width="20"
+                                                               Height="20"/>
+                            </Button>
+
+                            <Button x:Name="SkipBackward2"
+                                    Style="{StaticResource SkipButtons}"
+                                    BorderBrush="Transparent"
+                                    Width="50" 
+                                    Height="50"
+                                    HorizontalContentAlignment="Center"
+                                    VerticalContentAlignment="Center"
+                                    Click="SkipBackward2_Click"
+                                    Margin="202,254,384,91">
+
+                                <iconPacks:PackIconFontAwesome Kind="StepBackwardSolid" 
+                                                                   VerticalAlignment="Center" 
+                                                                   HorizontalAlignment="Center"
+                                                                   Width="20"
+                                                                   Height="20"/>
+                            </Button>
+
+                            <ToggleButton x:Name="Shuffle2"
+                                          Style="{StaticResource PlayerToggleButtons}"
+                                          BorderBrush="Transparent"
+                                          Width="50" 
+                                          Height="50"
+                                          HorizontalContentAlignment="Center"
+                                          VerticalContentAlignment="Center" Margin="133,254,453,91"
+                                          IsChecked="True"
+                                          IsEnabled="False">
+
+                                <iconPacks:PackIconFontAwesome Kind="RandomSolid" 
+                                                               VerticalAlignment="Center" 
+                                                               HorizontalAlignment="Center"
+                                                               Width="20"
+                                                               Height="20"/>
+                            </ToggleButton>
+
+                            <ToggleButton x:Name="Repeat2"
+                                          Style="{StaticResource PlayerToggleButtons}"
+                                          BorderBrush="Transparent"
+                                          Width="50" 
+                                          Height="50"
+                                          Click="Repeat2_Click"
+                                          HorizontalContentAlignment="Center"
+                                          VerticalContentAlignment="Center" Margin="453,254,133,91">
+
+                                <iconPacks:PackIconFontAwesome Kind="RedoAltSolid" 
+                                                               VerticalAlignment="Center" 
+                                                               HorizontalAlignment="Center"
+                                                               Width="20"
+                                                               Height="20"/>
+                            </ToggleButton>
+
+                        </Grid>
+
+                    </TabItem>
+
+                </TabControl>
+
+            </TabItem>
+
+            <TabItem Name="Radio3" 
+                     Style="{StaticResource StationTabItem}"
+                     Margin="0,40,0,-40">
+
+                <TabItem.Header>
+                    <Grid>
+                        <Label Content="{Binding Text,ElementName=StationName3,UpdateSourceTrigger=PropertyChanged}"
+                               VerticalContentAlignment="Center"
+                               Margin="-7,0,61,0"/>
+                        <iconPacks:PackIconFontAwesome x:Name="PlayStatusIcon3"
+                                                       Kind="VolumeDownSolid" 
+                                                       VerticalAlignment="Center" 
+                                                       HorizontalAlignment="Center"
+                                                       Visibility="Hidden"
+                                                       Foreground="White"
+                                                       Width="11"
+                                                       Height="11"
+                                                       Margin="0,0,210,55"/>
+                        <Label Content="{Binding ElementName=Slider3, Path=Value}"
+                               ContentStringFormat="{}{0:0.000}"
+                               FontSize="14"
+                               Foreground="White"
+                               HorizontalContentAlignment="Center"
+                               Margin="170,2,-10,29"/>
+                        <Label x:Name="TabModulation3"
+                               Content="{Binding ElementName=Modulation3, Path=OffLabel}"
+                               FontSize="14"
+                               Foreground="White"
+                               HorizontalContentAlignment="Center"
+                               Margin="178,30,0,0"/>
+                    </Grid>
+                </TabItem.Header>
+
+                <TabControl x:Name="Radio3panels"
+                            Margin="20, -40, 0, 0" 
+                            BorderThickness="1"
+                            BorderBrush="White">
+
+                    <TabItem x:Name="Settings3"
+                             Header="Settings"
+                             Style="{StaticResource ScreenTabItem}"
+                             Height="40"
+                             Width="100" 
+                             Margin="548,0,-548,0">
+
+                        <Grid>
+                            <Label  FontSize="18"
+                                    Foreground="White"
+                                    Content="Station Name :"
+                                    Height="50"
+                                    VerticalContentAlignment="Center"
+                                    HorizontalContentAlignment="Center"
+                                    Margin="70,24,438,324"/>
+
+                            <TextBox   x:Name="StationName3"
+                                       FontSize="18"
+                                       Text="Radio 4"
+                                       TextChanged="StationName3_TextChanged"
+                                       MaxLength="12"
+                                       Foreground="{DynamicResource AccentColorBrush}"
+                                       VerticalContentAlignment="Center"
+                                       HorizontalContentAlignment="Center"
+                                       Margin="243,29,235,326.5"/>
+
+                            <Label  FontSize="18"
+                                    Foreground="White"
+                                    Content="Music Directory :"
+                                    Height="50"
+                                    VerticalContentAlignment="Center"
+                                    HorizontalContentAlignment="Center"
+                                    Margin="70,94,423,236.5"/>
+
+                            <TextBox x:Name="Directory3"
+                                     FontSize="15"
+                                     Foreground="{DynamicResource AccentColorBrush}"
+                                     VerticalContentAlignment="Center"
+                                     IsReadOnly="True"
+                                     Margin="243,106,151,246.5"/>
+
+                            <Button Margin="506,116,80,251.5"
+                                    Style="{StaticResource RoundedAccentedButton}"
+                                    Content="Browse"
+                                    FontSize="10"
+                                    HorizontalContentAlignment="Center"
+                                    VerticalContentAlignment="Center"
+                                    Click="DirectoryBrowse3_Click"
+                                    x:Name="DirectoryBrowse3" />
+
+                            <Label  FontSize="18"
+                                    Foreground="White"
+                                    Content="Modulation :"
+                                    Height="50"
+                                    VerticalContentAlignment="Center"
+                                    HorizontalContentAlignment="Center"
+                                    Margin="70,164,452,170.5"/>
+
+                            <Controls:ToggleSwitch x:Name="Modulation3"
+                                                   OnLabel="FM" 
+                                                   OffLabel="AM"
+                                                   FontSize="20"
+                                                   Foreground="{DynamicResource AccentColorBrush}"
+                                                   OffSwitchBrush="{DynamicResource AccentColorBrush}"
+                                                   OnSwitchBrush="{DynamicResource AccentColorBrush}"
+                                                   IsCheckedChanged="Modulation3_IsCheckedChanged"
+                                                   VerticalAlignment="Center"
+                                                   Margin="243,176,218,184.5"/>
+
+                            <Label  FontSize="18"
+                                    Foreground="White"
+                                    Content="Frequency :"
+                                    Height="50"
+                                    VerticalContentAlignment="Center"
+                                    HorizontalContentAlignment="Center"
+                                    Margin="70,234,464,114"/>
+
+                            <Label  x:Name="Frequency3"
+                                    FontSize="20"
+                                    Foreground="{DynamicResource AccentColorBrush}"
+                                    Content="{Binding ElementName=Slider3, Path=Value}"
+                                    ContentStringFormat="{}{0:0.000}"
+                                    VerticalContentAlignment="Center"
+                                    Margin="238,240,318,119.5"/>
+
+                            <Label  FontSize="18"
+                                    Foreground="White"
+                                    Content="MHz"
+                                    VerticalContentAlignment="Center"
+                                    HorizontalContentAlignment="Center"
+                                    Margin="357,240,229,117.5"/>
+
+                            <Slider x:Name="Slider3"
+                                    Margin="80,298,80,62"
+                                    Style="{DynamicResource FreqSliderStyle}"
+                                    TickPlacement="None"
+                                    TickFrequency=".100"
+                                    IsSnapToTickEnabled="True"
+                                    Value="203.000"
+                                    ValueChanged="Slider3_ValueChanged"
+                                    Minimum="0"
+                                    Maximum="400"
+                                    SmallChange="0.1"
+                                    LargeChange="1"/>
+
+                            <TickBar x:Name="BottomTick3"
+                                     Fill="White"
+                                     Placement="Bottom"
+                                     TickFrequency="5"
+                                     Margin="80,333,80,47"/>
+
+                            <Label  FontSize="16"
+                                    Foreground="White"
+                                    Content="0"
+                                    VerticalContentAlignment="Center"
+                                    HorizontalContentAlignment="Center"
+                                    Margin="50,347,529,16"/>
+
+                            <Label  FontSize="16"
+                                    Foreground="White"
+                                    Content="100"
+                                    VerticalContentAlignment="Center"
+                                    HorizontalContentAlignment="Center"
+                                    Margin="171,343,409,21"/>
+
+                            <Label  FontSize="16"
+                                    Foreground="White"
+                                    Content="200"
+                                    VerticalContentAlignment="Center"
+                                    HorizontalContentAlignment="Center"
+                                    Margin="286,343,286,21"/>
+
+                            <Label  FontSize="16"
+                                    Foreground="White"
+                                    Content="300"
+                                    VerticalContentAlignment="Center"
+                                    HorizontalContentAlignment="Center"
+                                    Margin="409,343,171,21"/>
+
+                            <Label  FontSize="16"
+                                    Foreground="White"
+                                    Content="400"
+                                    VerticalContentAlignment="Center"
+                                    HorizontalContentAlignment="Center"
+                                    Margin="528,347,52,17"/>
+                        </Grid>
+                    </TabItem>
+
+                    <TabItem Name="Queue3" 
+                             Header="Queue"
+                             Style="{StaticResource ScreenTabItem}"
+                             IsEnabled="False"
+                             Height="40"
+                             Width="100" 
+                             Margin="346,0,-346,0">
+
+                        <Grid>
+                            <Label FontSize="28"
+                                       HorizontalContentAlignment="Center"
+                                       VerticalContentAlignment="Center"
+                                       Content="Not Yet Implemented"
+                                       Margin="90,160,90,182"/>
+                        </Grid>
+                    </TabItem>
+
+                    <TabItem Name="Player3" 
+                             Header="Player"
+                             Style="{StaticResource ScreenTabItem}"
+                             Height="40"
+                             Width="100" 
+                             Margin="144,0,-144,0">
+
+                        <Grid>
+                            <Label x:Name="TrackLabel3"
+                                   Visibility="Collapsed"
+                                   FontSize="18"
+                                   Foreground="White"
+                                   Opacity=".8"
+                                   HorizontalContentAlignment="Center"
+                                   VerticalContentAlignment="Center"
+                                   Content="Track:" 
+                                   Margin="32,37,543,308"/>
+
+                            <Label x:Name="TrackNumber3"
+                                   Visibility="Collapsed"
+                                   FontSize="18"
+                                   Foreground="White"
+                                   Opacity=".8"
+                                   VerticalContentAlignment="Center"
+                                   Margin="98,37,357,308"/>
+
+                            <Label x:Name="Timer3"
+                                   Visibility="Collapsed"
+                                   FontSize="20"
+                                   Foreground="White"
+                                   Opacity=".8"
+                                   VerticalContentAlignment="Center"
+                                   HorizontalContentAlignment="Center"
+                                   Content="00:00"
+                                   Margin="518,36,10,309"/>
+
+                            <Label x:Name="TrackTitle3"
+                                   FontSize="18"
+                                   Background="{DynamicResource TabSelectedColor}"
+                                   BorderBrush="{DynamicResource AccentColorBrush}"
+                                   BorderThickness="1"
+                                   HorizontalContentAlignment="Center"
+                                   VerticalContentAlignment="Center"
+                                   Margin="89,130,91,212"/>
+
+                            <Button x:Name="PlayButton3"
+                                    Style="{StaticResource PlayPauseButton}"
+                                    HorizontalContentAlignment="Center"
+                                    VerticalContentAlignment="Center"
+                                    Click="PlayButton3_Click"
+                                    Margin="278,240,278,75">
+
+                                <iconPacks:PackIconFontAwesome x:Name="PlayIcon3"
+                                                               Kind="PlaySolid" 
+                                                               VerticalAlignment="Center" 
+                                                               HorizontalAlignment="Center"
+                                                               Foreground="{DynamicResource AccentColorBrush}"
+                                                               Width="25"
+                                                               Height="25"/>
+                            </Button>
+
+                            <Button x:Name="SkipForward3"
+                                    Style="{StaticResource SkipButtons}"
+                                    BorderBrush="Transparent"
+                                    Width="50" 
+                                    Height="50"
+                                    HorizontalContentAlignment="Center"
+                                    VerticalContentAlignment="Center"
+                                    Click="SkipForward3_Click"
+                                    Margin="384,254,202,91">
+
+                                <iconPacks:PackIconFontAwesome Kind="StepForwardSolid" 
+                                                               VerticalAlignment="Center" 
+                                                               HorizontalAlignment="Center"
+                                                               Width="20"
+                                                               Height="20"/>
+                            </Button>
+
+                            <Button x:Name="SkipBackward3"
+                                    Style="{StaticResource SkipButtons}"
+                                    BorderBrush="Transparent"
+                                    Width="50" 
+                                    Height="50"
+                                    HorizontalContentAlignment="Center"
+                                    VerticalContentAlignment="Center"
+                                    Click="SkipBackward3_Click"
+                                    Margin="202,254,384,91">
+
+                                <iconPacks:PackIconFontAwesome Kind="StepBackwardSolid" 
+                                                                   VerticalAlignment="Center" 
+                                                                   HorizontalAlignment="Center"
+                                                                   Width="20"
+                                                                   Height="20"/>
+                            </Button>
+
+                            <ToggleButton x:Name="Shuffle3"
+                                          Style="{StaticResource PlayerToggleButtons}"
+                                          BorderBrush="Transparent"
+                                          Width="50" 
+                                          Height="50"
+                                          HorizontalContentAlignment="Center"
+                                          VerticalContentAlignment="Center" Margin="133,254,453,91"
+                                          IsChecked="True"
+                                          IsEnabled="False">
+
+                                <iconPacks:PackIconFontAwesome Kind="RandomSolid" 
+                                                               VerticalAlignment="Center" 
+                                                               HorizontalAlignment="Center"
+                                                               Width="20"
+                                                               Height="20"/>
+                            </ToggleButton>
+
+                            <ToggleButton x:Name="Repeat3"
+                                          Style="{StaticResource PlayerToggleButtons}"
+                                          BorderBrush="Transparent"
+                                          Width="50" 
+                                          Height="50"
+                                          Click="Repeat3_Click"
+                                          HorizontalContentAlignment="Center"
+                                          VerticalContentAlignment="Center" Margin="453,254,133,91">
+
+                                <iconPacks:PackIconFontAwesome Kind="RedoAltSolid" 
+                                                               VerticalAlignment="Center" 
+                                                               HorizontalAlignment="Center"
+                                                               Width="20"
+                                                               Height="20"/>
+                            </ToggleButton>
+
+                        </Grid>
+
+                    </TabItem>
+
+                </TabControl>
+
+            </TabItem>
+
+        </TabControl>
+
+        <Button Margin="760,460,10,10"
+                Style="{StaticResource RoundedAccentedButton}"
+                Content="Disconnect"
+                FontSize="14"
+                HorizontalContentAlignment="Center"
+                VerticalContentAlignment="Center"
+                Command="{Binding Path=DisconnectCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Controls:MetroWindow}}}"
+                x:Name="DisconnectButton" />
+    </Grid>
+
+</Controls:MetroWindow>
