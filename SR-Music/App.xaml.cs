@@ -51,7 +51,14 @@ namespace DCS_SR_Music
 
         private void SetupLogging()
         {
-            string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            string logPath = new Uri(AppDomain.CurrentDomain.BaseDirectory + "logs").LocalPath;
+
+            if (!Directory.Exists(logPath))
+            {
+                Directory.CreateDirectory(logPath);
+            }
+
+            string baseDirectory = AppDomain.CurrentDomain.BaseDirectory + "logs";
             string logFilePath = Path.Combine(baseDirectory, "log.txt");
             string oldLogFilePath = Path.Combine(baseDirectory, "log.old.txt");
 
@@ -83,7 +90,7 @@ namespace DCS_SR_Music
             var fileTarget = new FileTarget();
             config.AddTarget("file", fileTarget);
 
-            fileTarget.FileName = "${basedir}/log.txt";
+            fileTarget.FileName = "${basedir}/logs/log.txt";
             fileTarget.Layout = @"${longdate} | ${logger} | ${message} ${exception:format=toString,Data:maxInnerExceptionLevel=1}";
 
 #if DEBUG

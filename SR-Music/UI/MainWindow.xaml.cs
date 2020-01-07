@@ -82,6 +82,19 @@ namespace DCS_SR_Music
             if (shutdown)
             {
                 // This should be the only place where a hard session quit/disconnect is called
+                foreach (Station station in session.Stations)
+                {
+                    if (station.PlayingMusic)
+                    {
+                        station.StopMusic();
+                    }
+                }
+
+                if (session.StationBroadcaster.IsRunning)
+                {
+                    session.StationBroadcaster.Stop();
+                }
+
                 session.Quit = true;
                 Task.Run(session.Disconnect).Wait();
                 Logger.Info("Disconnnected from server");

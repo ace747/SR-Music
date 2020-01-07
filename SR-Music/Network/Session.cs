@@ -124,6 +124,14 @@ namespace DCS_SR_Music.Network
                         {
                             if (sessionConnected)
                             {
+                                foreach (Station station in Stations)
+                                {
+                                    if (station.PlayingMusic)
+                                    {
+                                        station.StopMusic();
+                                    }
+                                }
+
                                 StationBroadcaster.Stop();
 
                                 // Wait for all clients to disconnect before signaling event

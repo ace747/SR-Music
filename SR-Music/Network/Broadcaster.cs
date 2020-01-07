@@ -23,6 +23,7 @@ namespace DCS_SR_Music.Network
         public event Action<bool, string> UpdateConnectionStatus;
 
         public bool SecureCoalitions { get; set; }
+        public bool IsRunning { get; set; } = false;
 
         public Broadcaster(IPEndPoint endPoint, List<StationClient> stationClients)
         {
@@ -98,8 +99,8 @@ namespace DCS_SR_Music.Network
             audioUdpClient.AllowNatTraversal(true);
 
             stop = false;
-
             StartPing();
+            IsRunning = true;
 
             while (!stop)
             {
@@ -138,6 +139,8 @@ namespace DCS_SR_Music.Network
                     audioUdpClient.Close();
                     audioUdpClient = null;
                 }
+
+                IsRunning = false;
             }
             catch (Exception)
             {

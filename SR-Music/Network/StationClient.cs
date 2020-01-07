@@ -80,9 +80,9 @@ namespace DCS_SR_Music.Network
                     }
                 }
 
-                catch (Exception ex)
+                catch (Exception)
                 {
-                   Logger.Error(ex, "Could not connect to server");
+                   Logger.Error($"Could not connect to server - station {stationNumber} blufor client");
                    UpdateConnectionStatus(false, "connection attempt failed");
                 }
             }
@@ -115,9 +115,9 @@ namespace DCS_SR_Music.Network
                     }
                 }
 
-                catch (Exception ex)
+                catch (Exception)
                 {
-                    Logger.Error(ex, "Could not connect to server");
+                    Logger.Error($"Could not connect to server - station {stationNumber} opfor client");
                     UpdateConnectionStatus(false, "connection attempt failed");
                 }
             }
