@@ -47,6 +47,8 @@ In addition to setting the frequency and modulation, you will also need to selec
 
 Once you have set your station settings to your liking, swap over to the Player tab and click play!  You can use the media controls to skip both backwards and forwards between tracks.  You can also enable track repeat.  Because the Queue tab is not yet implemented, shuffle has been permanently enabled.  With shuffle on, the order of songs will be re-shuffled once you reach the end of the number of tracks listed.
 
+#### NOTE: ***Please disable the SRS radio sound effects for better music quality!***
+
 ![Alt text](images/Screenshot7.PNG?raw=true "Optional Title")
 
 You are now ready to take to the skies in DCS, and rock out to the Top Gun soundtrack with your friends via SRS and SR-Music! 🎧🎶
