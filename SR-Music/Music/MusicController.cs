@@ -89,28 +89,33 @@ namespace DCS_SR_Music.Network
 
             while (playMusic)
             {
-                string trackPath = getNextTrack();
-                string trackName = trackDictionary[trackPath];
-
-                if (trackName.Length > 30)
-                {
-                    trackName = trackName.Substring(0, 30) + "...";
-                }
-
-                TimeSpan prevTime = new TimeSpan(0);
-                TimeSpan trackTickTime = new TimeSpan(0);
-
-                // UI events for player
-                TrackNameUpdate(stationNumber, trackName);
-                TrackTimerUpdate(stationNumber, "00:00");
-                TrackNumberUpdate(stationNumber, getTrackNumLabel());
-
-                // Re-sync track time with server, sleep for amount of lag on server
-                Thread.Sleep(totalLagTime);
-                totalLagTime = new TimeSpan(0);
+                string trackPath = "";
+                string trackName = "";
 
                 try
                 {
+                    trackPath = getNextTrack();
+                    trackName = trackDictionary[trackPath];
+
+                    Logger.Info($"Station {stationNumber} is now playing: {trackName}");
+
+                    if (trackName.Length > 30)
+                    {
+                        trackName = trackName.Substring(0, 30) + "...";
+                    }
+
+                    TimeSpan prevTime = new TimeSpan(0);
+                    TimeSpan trackTickTime = new TimeSpan(0);
+
+                    // UI events for player
+                    TrackNameUpdate(stationNumber, trackName);
+                    TrackTimerUpdate(stationNumber, "00:00");
+                    TrackNumberUpdate(stationNumber, getTrackNumLabel());
+
+                    // Re-sync track time with server, sleep for amount of lag on server
+                    Thread.Sleep(totalLagTime);
+                    totalLagTime = new TimeSpan(0);
+
                     using (Mp3FileReader mp3 = new Mp3FileReader(trackPath))
                     {
                         using (var conversionStream = new WaveFormatConversionStream(format, mp3))
@@ -122,7 +127,7 @@ namespace DCS_SR_Music.Network
                                     if (skip)
                                     {
                                         // Don't skip to previous if more than 3 seconds into song
-                                        if (pcm.CurrentTime >= new TimeSpan(0,0,3))
+                                        if (pcm.CurrentTime >= new TimeSpan(0, 0, 3))
                                         {
                                             lock (trackLock)
                                             {
@@ -157,7 +162,7 @@ namespace DCS_SR_Music.Network
                                         Thread.Sleep(sleepTime);
                                         totalLagTime = totalLagTime.Add(lag);
                                     }
-                                    
+
                                     prevTime = currentTime;
                                     trackTickTime = currentTime.Subtract(totalLagTime);
                                     timerTicked(trackTickTime);
@@ -189,7 +194,7 @@ namespace DCS_SR_Music.Network
                 {
                     trackDictionary.Remove(trackPath);
 
-                    if (trackDictionary.Count >= 1)
+                    if (trackDictionary.Count > 1)
                     {
                         Logger.Error(ex, $"Error encountered during audio playback of track: {trackPath}.  Error: ");
                         audioTracksList.RemoveAt(trackIndex);
@@ -312,25 +317,45 @@ namespace DCS_SR_Music.Network
 
         private string getNextTrack()
         {
-            if (trackIndex >= audioTracksList.Count)
+            try
             {
-                shuffleAudioTracksList();
-            }
-
-            lock (trackLock)
-            {
-                if (skip)
+                if (trackIndex >= audioTracksList.Count)
                 {
-                    skip = false;
-
-                    if (trackIndex < 0)
+                    if (audioTracksList.Count > 1)
                     {
-                        trackIndex = 0;
+                        shuffleAudioTracksList();
+                    }
+
+                    else if (audioTracksList.Count == 1)
+                    {
+                        lock (trackLock)
+                        {
+                            trackIndex = 0;
+                        }
                     }
                 }
+
+                lock (trackLock)
+                {
+                    if (skip)
+                    {
+                        skip = false;
+
+                        if (trackIndex < 0)
+                        {
+                            trackIndex = 0;
+                        }
+                    }
+                }
+
+                return audioTracksList[trackIndex];
             }
 
-            return audioTracksList[trackIndex];
+            catch (Exception)
+            {
+                Logger.Warn($"Music Controller on station {stationNumber} unable to get next track.");
+                return "";
+            }
         }
 
         private string getTrackNumLabel()

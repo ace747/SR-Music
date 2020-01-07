@@ -21,7 +21,7 @@
         <Label  FontSize="12"
                 FontStyle="Italic"
                 Foreground="White"
-                Content="Version 0.1.0 Alpha" 
+                Content="Version 0.1.1-Alpha" 
                 Margin="10,460,740,10"
                 VerticalContentAlignment="Center"/>
 

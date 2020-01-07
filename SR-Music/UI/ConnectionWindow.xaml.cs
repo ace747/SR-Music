@@ -96,6 +96,7 @@ namespace DCS_SR_Music
                 var resolvedIP = ipAddress.FirstOrDefault(xa => xa.AddressFamily == AddressFamily.InterNetwork);
 
                 session = new Session(new IPEndPoint(resolvedIP, Int32.Parse(port)));
+                Logger.Info($"Attempting to connect @ {resolvedIP.ToString() + ":" + port}");
                 session.ConnectionEvent += ConnectionEvent;
                 session.Connect();
             }
