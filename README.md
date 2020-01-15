@@ -54,7 +54,7 @@ Once you have set your station settings to your liking, swap over to the Player 
 You are now ready to take to the skies in DCS, and rock out to the Top Gun soundtrack with your friends via SRS and SR-Music! 🎧🎶
 
 ## Help
-**Please join the SR-Music discord server: https://discord.gg/BPmtn5**
+**Please join the SR-Music discord server: https://discord.gg/W8DsV6D**
 
 If you run into any issues and need help, please feel free to reach out to me directly on Discord (Ghostrider#2610).  You can also try the general or support channels on the discord server.
 
