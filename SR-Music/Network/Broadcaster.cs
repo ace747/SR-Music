@@ -176,6 +176,7 @@ namespace DCS_SR_Music.Network
 
                     // Send audio
                     audioUdpClient.Send(encodedUdpVoicePacketBlufor, encodedUdpVoicePacketBlufor.Length, serverEndPoint);
+                    Logger.Debug($"Broadcaster sent blufor audio packet #{bluforClient.PacketNumber} for client {bluforGuid}");
 
                     if (SecureCoalitions)
                     {
@@ -201,6 +202,7 @@ namespace DCS_SR_Music.Network
 
                         // Send audio
                         audioUdpClient.Send(encodedUdpVoicePacketOpfor, encodedUdpVoicePacketOpfor.Length, serverEndPoint);
+                        Logger.Debug($"Broadcaster sent blufor audio packet #{opforClient.PacketNumber} for client {opforGuid}");
                     }
                 }
             }
@@ -246,6 +248,7 @@ namespace DCS_SR_Music.Network
                                 if (!musicClientPair.Value.IsBroadcasting)
                                 {
                                     audioUdpClient.Send(message, message.Length, serverEndPoint);
+                                    Logger.Debug($"Broadcaster - pinging for music client: {musicClientPair.Value.UnitId}");
                                 }
                             }
                         }

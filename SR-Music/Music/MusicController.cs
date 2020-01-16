@@ -175,6 +175,7 @@ namespace DCS_SR_Music.Network
                                     var encoded = new byte[len];
                                     Buffer.BlockCopy(buff, 0, encoded, 0, len);
 
+                                    Logger.Debug($"Music Controller on station {stationNumber} streaming audio packet with length {len}. Track current time is: {pcm.CurrentTime.ToString()}");
                                     Stream(encoded);
                                 }
                             }

@@ -26,6 +26,7 @@ namespace DCS_SR_Music
         public ConnectionWindow()
         {
             InitializeComponent();
+            Logger.Info("Application startup");
 
             connectCommand = new DelegateCommand(InitConnection);
         }
@@ -38,6 +39,7 @@ namespace DCS_SR_Music
         {
             base.OnClosed(e);
             Application.Current.Shutdown();
+            Logger.Info("Application shutdown");
         }
 
         private void InitConnection()
