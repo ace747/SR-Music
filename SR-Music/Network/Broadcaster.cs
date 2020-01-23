@@ -17,84 +17,45 @@ namespace DCS_SR_Music.Network
         private UdpClient audioUdpClient;
         private bool stop = false;
         private readonly CancellationTokenSource pingStop = new CancellationTokenSource();
-        private static readonly ConcurrentDictionary<string, MusicClient> musicClients = new ConcurrentDictionary<string, MusicClient>();
+        private MusicClient musicClient;
 
         // Events
         public event Action<bool, string> UpdateConnectionStatus;
-
-        public bool SecureCoalitions { get; set; }
         public bool IsRunning { get; set; } = false;
 
-        public Broadcaster(IPEndPoint endPoint, List<StationClient> stationClients)
+        public Broadcaster(IPEndPoint endPoint)
         {
             serverEndPoint = new IPEndPoint(endPoint.Address, endPoint.Port);
-
-            foreach (StationClient statClient in stationClients)
-            {
-                UpdateClientRadio(statClient);
-            }
         }
 
         public void UpdateClientRadio(StationClient statClient)
         {
-            string bluforGUID = statClient.BluforClient.ClientGuid;
-            string opforGUID = statClient.OpforClient.ClientGuid;
+            DCSPlayerRadioInfo radioInfo = statClient.Client.RadioInfo;
 
-            DCSPlayerRadioInfo bluforRadioInfo = statClient.BluforClient.RadioInfo;
-            DCSPlayerRadioInfo opforRadioInfo = statClient.OpforClient.RadioInfo;
-
-            // Frequencies, Encryptions, and Modulations should be the same between Blufor and Opfor
             var frequencies = new List<double>(1);
             var encryptions = new List<byte>(1);
             var modulations = new List<byte>(1);
 
-            MusicClient bluforMusicClient;
-            MusicClient opforMusicClient;
-
-            if (bluforRadioInfo != null && opforRadioInfo != null)
+            if (radioInfo != null)
             {
-                frequencies.Add(bluforRadioInfo.radios[0].freq);
-                encryptions.Add(bluforRadioInfo.radios[0].enc ? bluforRadioInfo.radios[0].encKey : (byte)0);
-                modulations.Add((byte)bluforRadioInfo.radios[0].modulation);
+                frequencies.Add(radioInfo.radios[0].freq);
+                encryptions.Add(radioInfo.radios[0].enc ? radioInfo.radios[0].encKey : (byte)0);
+                modulations.Add((byte)radioInfo.radios[0].modulation);
 
-                bluforMusicClient = new MusicClient
-                {
-                    GuidAsciiBytes = Encoding.ASCII.GetBytes(bluforGUID),
-                    UnitId = bluforRadioInfo.unitId,
-                    Frequencies = frequencies,
-                    Encryptions = encryptions,
-                    Modulations = modulations
-                };
-
-                opforMusicClient = new MusicClient
-                {
-                    GuidAsciiBytes = Encoding.ASCII.GetBytes(opforGUID),
-                    UnitId = opforRadioInfo.unitId,
-                    Frequencies = frequencies,
-                    Encryptions = encryptions,
-                    Modulations = modulations
-                };
+                musicClient.UnitId = radioInfo.unitId;
+                musicClient.Frequencies = frequencies;
+                musicClient.Encryptions = encryptions;
+                musicClient.Modulations = modulations;
             }
-
-            else
-            {
-                bluforMusicClient = new MusicClient
-                {
-                    GuidAsciiBytes = Encoding.ASCII.GetBytes(bluforGUID),
-                };
-
-                opforMusicClient = new MusicClient
-                {
-                    GuidAsciiBytes = Encoding.ASCII.GetBytes(opforGUID),
-                };
-            }
-
-            musicClients[bluforGUID] = bluforMusicClient;
-            musicClients[opforGUID] = opforMusicClient;
         }   
 
-        public void Start()
+        public void Start(string guid)
         {
+            musicClient = new MusicClient
+            {
+                GuidAsciiBytes = Encoding.ASCII.GetBytes(guid)
+            };
+
             audioUdpClient = new UdpClient();
             audioUdpClient.AllowNatTraversal(true);
 
@@ -144,66 +105,39 @@ namespace DCS_SR_Music.Network
             }
             catch (Exception)
             {
-                Logger.Error("Failed to close audio client");
+                Logger.Error("Failed to close music client");
             }
         }
 
-        public void SendMusicPacket(string bluforGuid, string opforGuid, byte[] musicBytes)
+        public void SendMusicPacket(byte[] musicBytes, DateTime requestedBroadcastTime)
         {
             try
             {
                 if (!stop && (musicBytes != null))
                 {
-                    musicClients[bluforGuid].IsBroadcasting = true;
-                    musicClients[bluforGuid].PacketNumber += 1;
-
-                    MusicClient bluforClient = musicClients[bluforGuid];
+                    musicClient.IsBroadcasting = true;
+                    musicClient.PacketNumber += 1;
 
                     // Generate packet
                     var udpVoicePacketBlufor = new UDPVoicePacket
                     {
-                        GuidBytes = bluforClient.GuidAsciiBytes,
+                        GuidBytes = musicClient.GuidAsciiBytes,
                         AudioPart1Bytes = musicBytes,
                         AudioPart1Length = (ushort) musicBytes.Length,
-                        Frequencies = bluforClient.Frequencies.ToArray(),
-                        UnitId = bluforClient.UnitId,
-                        Encryptions = bluforClient.Encryptions.ToArray(),
-                        Modulations = bluforClient.Modulations.ToArray(),
-                        PacketNumber = bluforClient.PacketNumber
+                        Frequencies = musicClient.Frequencies.ToArray(),
+                        UnitId = musicClient.UnitId,
+                        Encryptions = musicClient.Encryptions.ToArray(),
+                        Modulations = musicClient.Modulations.ToArray(),
+                        PacketNumber = musicClient.PacketNumber
                     };
 
                     var encodedUdpVoicePacketBlufor = udpVoicePacketBlufor.EncodePacket();
 
                     // Send audio
                     audioUdpClient.Send(encodedUdpVoicePacketBlufor, encodedUdpVoicePacketBlufor.Length, serverEndPoint);
-                    Logger.Debug($"Broadcaster sent blufor audio packet #{bluforClient.PacketNumber} for client {bluforGuid}");
 
-                    if (SecureCoalitions)
-                    {
-                        musicClients[opforGuid].IsBroadcasting = true;
-                        musicClients[opforGuid].PacketNumber += 1;
-
-                        MusicClient opforClient = musicClients[opforGuid];
-
-                        // Generate packet
-                        var udpVoicePacketOpfor = new UDPVoicePacket
-                        {
-                            GuidBytes = opforClient.GuidAsciiBytes,
-                            AudioPart1Bytes = musicBytes,
-                            AudioPart1Length = (ushort)musicBytes.Length,
-                            Frequencies = opforClient.Frequencies.ToArray(),
-                            UnitId = opforClient.UnitId,
-                            Encryptions = opforClient.Encryptions.ToArray(),
-                            Modulations = opforClient.Modulations.ToArray(),
-                            PacketNumber = opforClient.PacketNumber
-                        };
-
-                        var encodedUdpVoicePacketOpfor = udpVoicePacketOpfor.EncodePacket();
-
-                        // Send audio
-                        audioUdpClient.Send(encodedUdpVoicePacketOpfor, encodedUdpVoicePacketOpfor.Length, serverEndPoint);
-                        Logger.Debug($"Broadcaster sent blufor audio packet #{opforClient.PacketNumber} for client {opforGuid}");
-                    }
+                    Double elapsedMillisecs = ((TimeSpan)(System.DateTime.Now - requestedBroadcastTime)).TotalMilliseconds;
+                    Logger.Debug($"Broadcaster took {elapsedMillisecs.ToString()}ms to process/send audio packet #{musicClient.PacketNumber} for music client {musicClient.UnitId.ToString()}");
                 }
             }
 
@@ -217,13 +151,10 @@ namespace DCS_SR_Music.Network
         {
             Logger.Debug("Pinging Server - Starting");
 
-            foreach (KeyValuePair<string, MusicClient> musicClientPair in musicClients)
-            {
-                byte[] message = Encoding.ASCII.GetBytes(musicClientPair.Key);
+            byte[] message = musicClient.GuidAsciiBytes;
 
-                // Force immediate ping once to avoid race condition before starting to listen
-                audioUdpClient.Send(message, message.Length, serverEndPoint);
-            }
+            // Force immediate ping once to avoid race condition before starting to listen
+            audioUdpClient.Send(message, message.Length, serverEndPoint);
 
             var thread = new Thread(() =>
             {
@@ -241,15 +172,10 @@ namespace DCS_SR_Music.Network
                     {
                         if (audioUdpClient != null)
                         {
-                            foreach (KeyValuePair<string, MusicClient> musicClientPair in musicClients)
+                            if (!musicClient.IsBroadcasting)
                             {
-                                byte[] message = Encoding.ASCII.GetBytes(musicClientPair.Key);
-
-                                if (!musicClientPair.Value.IsBroadcasting)
-                                {
-                                    audioUdpClient.Send(message, message.Length, serverEndPoint);
-                                    Logger.Debug($"Broadcaster - pinging for music client: {musicClientPair.Value.UnitId}");
-                                }
+                                audioUdpClient.Send(message, message.Length, serverEndPoint);
+                                Logger.Debug($"Broadcaster - pinging for music client: {musicClient.UnitId}");
                             }
                         }
                     }

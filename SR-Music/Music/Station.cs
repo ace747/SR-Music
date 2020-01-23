@@ -10,6 +10,7 @@ namespace DCS_SR_Music.Network
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
         public MusicController StationMusicController { get; }
+        public Broadcaster StationBroadcaster { get; }
         public int StationNumber { get; }
         public string StationName { get; set; }
         public string Directory { get; set; }
@@ -21,13 +22,22 @@ namespace DCS_SR_Music.Network
         public event Action<int, System.Double, int> UpdateStationRadio;
         public event Action<int> StopMusicEvent;
 
-        public Station(int num, string directory, IPEndPoint endPoint)
+        public Station(int num, string directory, IPEndPoint endPoint, string clientGuid)
         {
             StationNumber = num;
             Directory = new Uri(directory).LocalPath;
 
             StationMusicController = new MusicController(StationNumber);
             StationMusicController.StopMusic += StopMusic;
+            StationMusicController.Broadcast += Broadcast;
+
+            StationBroadcaster = new Broadcaster(endPoint);
+            new Thread(() => StationBroadcaster.Start(clientGuid)).Start();
+        }
+
+        private void Broadcast(byte[] audioBytes, DateTime requestedBroadcastTime)
+        {
+            StationBroadcaster.SendMusicPacket(audioBytes, requestedBroadcastTime);
         }
 
         public void StartMusic()

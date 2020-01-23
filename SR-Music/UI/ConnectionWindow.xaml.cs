@@ -116,7 +116,7 @@ namespace DCS_SR_Music
                 // session connected
                 if (connected)
                 {
-                    Application.Current.Dispatcher.Invoke(new Action(() => {
+                    Application.Current.Dispatcher.BeginInvoke(new Action(() => {
 
                         MainWindow = new MainWindow();
                         Application.Current.MainWindow = MainWindow;
@@ -136,7 +136,7 @@ namespace DCS_SR_Music
                 // session disconnected or failed to connect
                 else
                 {
-                    Application.Current.Dispatcher.Invoke(new Action(() => {
+                    Application.Current.Dispatcher.BeginInvoke(new Action(() => {
 
                         ConnectingRing.IsActive = false;
                         StatusLabel.Content = message;

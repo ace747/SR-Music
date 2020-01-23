@@ -88,11 +88,11 @@ namespace DCS_SR_Music
                     {
                         station.StopMusic();
                     }
-                }
 
-                if (session.StationBroadcaster.IsRunning)
-                {
-                    session.StationBroadcaster.Stop();
+                    if (station.StationBroadcaster.IsRunning)
+                    {
+                        station.StationBroadcaster.Stop();
+                    }
                 }
 
                 session.Quit = true;

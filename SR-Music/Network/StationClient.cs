@@ -9,6 +9,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace DCS_SR_Music.Network
 {
@@ -18,118 +19,72 @@ namespace DCS_SR_Music.Network
         private readonly int stationNumber;
         private readonly IPEndPoint serverEndpoint;
         private static readonly int MAX_DECODE_ERRORS = 5;
-        private bool sync = true;
+        private bool shouldSync = true;
+        private TcpClient tcpClient;
+        
+        public SRClient Client { get; set; }
 
         // Events
         public event Action<NetworkMessage> HandleMessage;
         public event Action<bool, string> UpdateConnectionStatus;
-
-        public TcpClient BluforTcpClient { get; private set; }
-        public TcpClient OpforTcpClient { get; private set; }
-        public SRClient BluforClient { get; set; }
-        public SRClient OpforClient { get; set; }
 
         public StationClient(int num, IPEndPoint endPoint)
         {
             stationNumber = num;
             serverEndpoint = endPoint;
 
-            BluforClient = new SRClient
+            Client = new SRClient
             {
-                Name = "BLUFOR MUSIC CLIENT " + stationNumber.ToString(),
+                Name = "MUSIC CLIENT " + stationNumber.ToString(),
                 Coalition = 2,
                 ClientGuid = ShortGuid.NewGuid().ToString(),
                 Position = new DcsPosition { x = 0, y = 0, z = 0 },
                 LatLngPosition = new DCSLatLngPosition()
             };
-
-            OpforClient = new SRClient
-            {
-                Name = "OPFOR MUSIC CLIENT " + stationNumber.ToString(),
-                Coalition = 1,
-                ClientGuid = ShortGuid.NewGuid().ToString(),
-                Position = new DcsPosition { x = 0, y = 0, z = 0 },
-                LatLngPosition = new DCSLatLngPosition()
-            };
         }
 
-        private void connectBluforClient()
+        private void connect()
         {
-            using(BluforTcpClient = new TcpClient())
+            using(tcpClient = new TcpClient())
             {
-                BluforTcpClient.SendTimeout = 10;
+                tcpClient.SendTimeout = 10;
 
                 try
                 {
-                    BluforTcpClient.NoDelay = true;
+                    tcpClient.NoDelay = true;
 
                     // Wait for 10 seconds before aborting connection attempt - no SRS server running/port opened in that case
-                    BluforTcpClient.ConnectAsync(serverEndpoint.Address, serverEndpoint.Port).Wait(TimeSpan.FromSeconds(10));
+                    tcpClient.ConnectAsync(serverEndpoint.Address, serverEndpoint.Port).Wait(TimeSpan.FromSeconds(10));
 
-                    if (BluforTcpClient.Connected)
+                    if (tcpClient.Connected)
                     {
                         Logger.Debug("Connected to server");
                         UpdateConnectionStatus(true, "");
-                        bluforSync();
+                        sync();
                     }
 
                     else
                     {
                         UpdateConnectionStatus(false, "connection attempt failed");
-                        Logger.Warn($"Station {stationNumber.ToString()} BluforClient failed to connect to server @ {serverEndpoint.ToString()}");
+                        Logger.Warn($"Station {stationNumber.ToString()} Client failed to connect to server @ {serverEndpoint.ToString()}");
                     }
                 }
 
                 catch (Exception)
                 {
-                   Logger.Error($"Could not connect to server - station {stationNumber} blufor client");
+                   Logger.Error($"Could not connect to server - station {stationNumber} client");
                    UpdateConnectionStatus(false, "connection attempt failed");
                 }
             }
         }
 
-        private void connectOpforClient()
-        {
-            using (OpforTcpClient = new TcpClient())
-            {
-                OpforTcpClient.SendTimeout = 10;
-
-                try
-                {
-                    OpforTcpClient.NoDelay = true;
-
-                    // Wait for 10 seconds before aborting connection attempt - no SRS server running/port opened in that case
-                    OpforTcpClient.ConnectAsync(serverEndpoint.Address, serverEndpoint.Port).Wait(TimeSpan.FromSeconds(10));
-
-                    if (OpforTcpClient.Connected)
-                    {
-                        Logger.Debug("Connected to server");
-                        UpdateConnectionStatus(true, "");
-                        opforSync();
-                    }
-
-                    else
-                    {
-                        UpdateConnectionStatus(false, "connection attempt failed");
-                        Logger.Warn($"Station {stationNumber.ToString()} OpforClient failed to connect to server @ {serverEndpoint.ToString()}");
-                    }
-                }
-
-                catch (Exception)
-                {
-                    Logger.Error($"Could not connect to server - station {stationNumber} opfor client");
-                    UpdateConnectionStatus(false, "connection attempt failed");
-                }
-            }
-        }
-
-        private void disconnectBluforClient()
+        private void disconnect()
         {
             try
             {
-                if (BluforTcpClient != null)
+                if (tcpClient != null)
                 {
-                    BluforTcpClient.Close();
+                    tcpClient.Close();
                 }
             }
 
@@ -141,43 +96,25 @@ namespace DCS_SR_Music.Network
             Logger.Debug("Disconnecting from server");
         }
 
-        private void disconnectOpforClient()
-        {
-            try
-            {
-                if (OpforTcpClient != null)
-                {
-                    OpforTcpClient.Close();
-                }
-            }
-
-            catch (Exception ex)
-            {
-                Logger.Error(ex, "Failed to disconnect from server");
-            }
-
-            Logger.Debug("Disconnecting from server");
-        }
-
-        private void bluforSync()
+        private void sync()
         {
             int decodeErrors = 0;
 
             try
             {
-                using (var reader = new StreamReader(BluforTcpClient.GetStream(), Encoding.UTF8))
+                using (var reader = new StreamReader(tcpClient.GetStream(), Encoding.UTF8))
                 {
                     try
                     {
                         // Start the loop off by sending a SYNC Request
                         sendMessage(new NetworkMessage
                         {
-                            Client = BluforClient,
+                            Client = Client,
                             MsgType = NetworkMessage.MessageType.SYNC
                         });
 
                         string line;
-                        while (sync && (line = reader.ReadLine()) != null)
+                        while (shouldSync && (line = reader.ReadLine()) != null)
                         {
                             try
                             {
@@ -207,7 +144,7 @@ namespace DCS_SR_Music.Network
                     // Swallow exception only if disconnect requested
                     catch (Exception ex)
                     {
-                        if (sync)
+                        if (shouldSync)
                         {
                             Logger.Error(ex, "Client exception during sync");
                         }
@@ -222,74 +159,7 @@ namespace DCS_SR_Music.Network
 
             catch (Exception ex)
             {
-                Logger.Error(ex, "Exception encountered during blufor client sync");
-            }
-        }
-
-        private void opforSync()
-        {
-            int decodeErrors = 0;
-
-            try
-            {
-                using (var reader = new StreamReader(OpforTcpClient.GetStream(), Encoding.UTF8))
-                {
-                    try
-                    {
-                        // Start the loop off by sending a SYNC Request
-                        sendMessage(new NetworkMessage
-                        {
-                            Client = OpforClient,
-                            MsgType = NetworkMessage.MessageType.SYNC
-                        });
-
-                        string line;
-                        while (sync && (line = reader.ReadLine()) != null)
-                        {
-                            try
-                            {
-                                var message = JsonConvert.DeserializeObject<NetworkMessage>(line);
-                                decodeErrors = 0; //reset counter
-
-                                if (message != null)
-                                {
-                                    HandleMessage(message);
-                                }
-                            }
-
-                            catch (Exception ex)
-                            {
-                                decodeErrors++;
-                                Logger.Warn(ex, "Client exception reading from socket ");
-
-                                if (decodeErrors > MAX_DECODE_ERRORS)
-                                {
-                                    UpdateConnectionStatus(false, "client disconnected");
-                                    break;
-                                }
-                            }
-                        }
-                    }
-
-                    catch (Exception ex)
-                    {
-                        // Swallow exception only if disconnect requested
-                        if (sync)
-                        {
-                            Logger.Error(ex, "Client exception during sync");
-                        }
-                    }
-                }
-            }
-
-            catch (IOException)
-            {
-                Logger.Error("Exception encountered reading from socket during client sync");
-            }
-
-            catch (Exception ex)
-            {
-                Logger.Error(ex, "Exception encountered during opfor client sync");
+                Logger.Error(ex, "Exception encountered during client sync");
             }
         }
 
@@ -301,17 +171,7 @@ namespace DCS_SR_Music.Network
                 var json = message.Encode();
                 var bytes = Encoding.UTF8.GetBytes(json);
 
-                // Blufor coalition
-                if (message.Client.Coalition == 2)
-                {
-                    BluforTcpClient.GetStream().Write(bytes, 0, bytes.Length);
-                }
-
-                // Opfor coalition
-                else
-                {
-                    OpforTcpClient.GetStream().Write(bytes, 0, bytes.Length);
-                }
+                tcpClient.GetStream().Write(bytes, 0, bytes.Length);
             }
 
             catch (Exception ex)
@@ -326,31 +186,23 @@ namespace DCS_SR_Music.Network
 
         public void Connect()
         {
-            var bluforSyncThread = new Thread(connectBluforClient);
-            var opforSyncThread = new Thread(connectOpforClient);
-
-            bluforSyncThread.IsBackground = true;
-            opforSyncThread.IsBackground = true;
-
-            bluforSyncThread.Start();
-            opforSyncThread.Start();
+            connect();            
         }
 
         public void Disconnect()
         {
-            sync = false;
+            shouldSync = false;
 
-            disconnectBluforClient();
-            disconnectOpforClient();
+            disconnect();
         }
 
         public bool IsConnected()
         {
             try
             {
-                if (BluforTcpClient != null && OpforTcpClient != null)
+                if (tcpClient != null)
                 {
-                    if (BluforTcpClient.Connected && OpforTcpClient.Connected)
+                    if (tcpClient.Connected)
                     {
                         return true;
                     }
@@ -369,31 +221,18 @@ namespace DCS_SR_Music.Network
         public StationClient UpdateRadioSettings(System.Double freq, int mod)
         {
             // Radio Information for music broadcast
-            DCSPlayerRadioInfo bluForRadioInfo = new DCSPlayerRadioInfo(freq, mod);
-            bluForRadioInfo.name = BluforClient.Name;
-            bluForRadioInfo.unit = BluforClient.Name;
-            bluForRadioInfo.ptt = false;
-
-            DCSPlayerRadioInfo opforRadioInfo = new DCSPlayerRadioInfo(freq, mod);
-            opforRadioInfo.name = OpforClient.Name;
-            opforRadioInfo.unit = OpforClient.Name;
-            opforRadioInfo.ptt = false;
+            DCSPlayerRadioInfo radioInfo = new DCSPlayerRadioInfo(freq, mod);
+            radioInfo.name = Client.Name;
+            radioInfo.unit = Client.Name;
+            radioInfo.ptt = false;
 
             // Update clients locally
-            BluforClient.RadioInfo = bluForRadioInfo;
-            OpforClient.RadioInfo = opforRadioInfo;
+            Client.RadioInfo = radioInfo;
 
-            // Update blufor radio on server
+            // Update radio on server
             sendMessage(new NetworkMessage
             {
-                Client = BluforClient,
-                MsgType = NetworkMessage.MessageType.RADIO_UPDATE
-            });
-
-            // Update opfor radio on server
-            sendMessage(new NetworkMessage
-            {
-                Client = OpforClient,
+                Client = Client,
                 MsgType = NetworkMessage.MessageType.RADIO_UPDATE
             });
 

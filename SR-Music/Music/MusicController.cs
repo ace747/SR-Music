@@ -4,10 +4,12 @@ using NAudio.Wave;
 using NLog;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 using Application = FragLabs.Audio.Codecs.Opus.Application;
@@ -28,8 +30,14 @@ namespace DCS_SR_Music.Network
         private bool repeat = false;
         private object trackLock = new object();
 
+        private int INPUT_AUDIO_LENGTH_MS = 40;
+        private int INPUT_SAMPLE_RATE = 16000;
+        private int SEGMENT_FRAMES;
+        private WaveFormat format;
+        private OpusEncoder encoder;
+
         // Events
-        public event Action<int, byte[]> Broadcast;
+        public event Action<byte[], DateTime> Broadcast;
         public event Action StopMusic;
         public event Action<int, string> TrackNameUpdate;
         public event Action<int, string> TrackTimerUpdate;
@@ -38,6 +46,11 @@ namespace DCS_SR_Music.Network
         public MusicController(int num)
         {
             stationNumber = num;
+
+            SEGMENT_FRAMES = (INPUT_SAMPLE_RATE / 1000) * INPUT_AUDIO_LENGTH_MS;
+            format = new WaveFormat(INPUT_SAMPLE_RATE, 16, 1);
+            encoder = OpusEncoder.Create(INPUT_SAMPLE_RATE, 1, Application.Voip);
+            encoder.ForwardErrorCorrection = false;
         }
 
         public void SetDirectory(string dir)
@@ -76,140 +89,96 @@ namespace DCS_SR_Music.Network
 
         public void Play()
         {
-            int INPUT_AUDIO_LENGTH_MS = 40;
-            int INPUT_SAMPLE_RATE = 48000;
-            int SEGMENT_FRAMES = (INPUT_SAMPLE_RATE / 1000) * INPUT_AUDIO_LENGTH_MS;
-            WaveFormat format = new WaveFormat(INPUT_SAMPLE_RATE, 16, 1);
-            OpusEncoder encoder = OpusEncoder.Create(INPUT_SAMPLE_RATE, 1, Application.Audio);
-            encoder.ForwardErrorCorrection = false;
             byte[] buffer = new byte[SEGMENT_FRAMES * 2];
-            TimeSpan lag = new TimeSpan(0, 0, 0, 0, 2);
-            TimeSpan totalLagTime = new TimeSpan(0);
-            TimeSpan maxLagTime = new TimeSpan(0, 0, 0, 0, 500);
 
-            while (playMusic)
+            Task.Run(async () =>
             {
-                string trackPath = "";
-                string trackName = "";
-
-                try
+                while (playMusic)
                 {
-                    trackPath = getNextTrack();
-                    trackName = trackDictionary[trackPath];
+                    string trackPath = "";
+                    string trackName = "";
 
-                    Logger.Info($"Station {stationNumber} is now playing: {trackName}");
-
-                    if (trackName.Length > 30)
+                    try
                     {
-                        trackName = trackName.Substring(0, 30) + "...";
-                    }
+                        trackPath = getNextTrack();
+                        trackName = trackDictionary[trackPath];
 
-                    TimeSpan prevTime = new TimeSpan(0);
-                    TimeSpan trackTickTime = new TimeSpan(0);
+                        Logger.Info($"Station {stationNumber} is now playing: {trackName}");
 
-                    // UI events for player
-                    TrackNameUpdate(stationNumber, trackName);
-                    TrackTimerUpdate(stationNumber, "00:00");
-                    TrackNumberUpdate(stationNumber, getTrackNumLabel());
-
-                    // Re-sync track time with server, sleep for amount of lag on server
-                    Thread.Sleep(totalLagTime);
-                    totalLagTime = new TimeSpan(0);
-
-                    using (Mp3FileReader mp3 = new Mp3FileReader(trackPath))
-                    {
-                        using (var conversionStream = new WaveFormatConversionStream(format, mp3))
+                        if (trackName.Length > 30)
                         {
-                            using (WaveStream pcm = WaveFormatConversionStream.CreatePcmStream(conversionStream))
+                            trackName = trackName.Substring(0, 30) + "...";
+                        }
+
+                        // UI events for player
+                        TrackNameUpdate(stationNumber, trackName);
+                        TrackTimerUpdate(stationNumber, "00:00");
+                        TrackNumberUpdate(stationNumber, getTrackNumLabel());
+
+                        using (Mp3FileReader mp3 = new Mp3FileReader(trackPath))
+                        {
+                            using (var conversionStream = new WaveFormatConversionStream(format, mp3))
                             {
-                                while (playMusic && (pcm.Read(buffer, 0, buffer.Length)) > 0)
+                                using (WaveStream pcm = WaveFormatConversionStream.CreatePcmStream(conversionStream))
                                 {
-                                    if (skip)
+                                    while (playMusic && (pcm.Read(buffer, 0, buffer.Length)) > 0)
                                     {
-                                        // Don't skip to previous if more than 3 seconds into song
-                                        if (pcm.CurrentTime >= new TimeSpan(0, 0, 3))
+                                        Logger.Debug($"Music Controller current track time on station {stationNumber} is: {pcm.CurrentTime.ToString()}");
+
+                                        if (skip)
                                         {
-                                            lock (trackLock)
+                                            // Don't skip to previous if more than 3 seconds into song
+                                            if (pcm.CurrentTime >= new TimeSpan(0, 0, 3))
                                             {
-                                                if (audioTracksList.IndexOf(trackPath) > trackIndex)
+                                                lock (trackLock)
                                                 {
-                                                    skip = true;
-                                                    trackIndex = audioTracksList.IndexOf(trackPath);
+                                                    if (audioTracksList.IndexOf(trackPath) > trackIndex)
+                                                    {
+                                                        skip = true;
+                                                        trackIndex = audioTracksList.IndexOf(trackPath);
+                                                    }
                                                 }
                                             }
+
+                                            break;
                                         }
 
-                                        break;
+                                        new Thread (() => Stream(buffer, pcm.CurrentTime)).Start();
+                                        await Task.Delay(INPUT_AUDIO_LENGTH_MS);
                                     }
-
-                                    TimeSpan currentTime = pcm.CurrentTime;
-                                    var packetTimeLength = currentTime - prevTime;
-                                    var sleepTime = packetTimeLength.Subtract(lag);
-
-                                    if (totalLagTime >= maxLagTime)
-                                    {
-                                        // Re-sync track time with server time + 6 packet sleep cycles ~ 230 ms
-                                        sleepTime = TimeSpan.FromTicks(sleepTime.Ticks * 6);
-                                        totalLagTime = totalLagTime.Subtract(sleepTime);
-
-                                        Logger.Debug($"Music Controller on station {stationNumber} sleeping for {sleepTime.Milliseconds.ToString()} ms at track time: {currentTime.ToString()} to re-sync with server");
-                                        Thread.Sleep(totalLagTime);
-                                        totalLagTime = new TimeSpan(0);
-                                    }
-
-                                    else
-                                    {
-                                        Thread.Sleep(sleepTime);
-                                        totalLagTime = totalLagTime.Add(lag);
-                                    }
-
-                                    prevTime = currentTime;
-                                    trackTickTime = currentTime.Subtract(totalLagTime);
-                                    timerTicked(trackTickTime);
-
-                                    // Encode as opus bytes
-                                    int len;
-                                    var buff = encoder.Encode(buffer, buffer.Length, out len);
-
-                                    // Create copy with small buffer
-                                    var encoded = new byte[len];
-                                    Buffer.BlockCopy(buff, 0, encoded, 0, len);
-
-                                    Logger.Debug($"Music Controller on station {stationNumber} streaming audio packet with length {len}. Track current time is: {pcm.CurrentTime.ToString()}");
-                                    Stream(encoded);
                                 }
+                            }
+                        }
+
+                        lock (trackLock)
+                        {
+                            if (!skip && !repeat)
+                            {
+                                trackIndex += 1;
                             }
                         }
                     }
 
-                    lock (trackLock)
+                    catch (Exception ex)
                     {
-                        if (!skip && !repeat)
+                        trackDictionary.Remove(trackPath);
+
+                        if (trackDictionary.Count > 1)
                         {
-                            trackIndex += 1;
+                            Logger.Error(ex, $"Error encountered during audio playback of track: {trackPath}.  Error: ");
+                            audioTracksList.RemoveAt(trackIndex);
+                            ShowAudioTrackError(trackName);
+                            continue;
+                        }
+
+                        else
+                        {
+                            Logger.Error(ex, $"Error encountered during audio playback on station: {stationNumber}.  Error: ");
+                            StopMusic();
                         }
                     }
                 }
-
-                catch (Exception ex)
-                {
-                    trackDictionary.Remove(trackPath);
-
-                    if (trackDictionary.Count > 1)
-                    {
-                        Logger.Error(ex, $"Error encountered during audio playback of track: {trackPath}.  Error: ");
-                        audioTracksList.RemoveAt(trackIndex);
-                        ShowAudioTrackError(trackName);
-                        continue;
-                    }
-
-                    else
-                    {
-                        Logger.Error(ex, $"Error encountered during audio playback on station: {stationNumber}.  Error: ");
-                        StopMusic();
-                    }
-                }
-            }
+            });
         }
 
         public void SkipForward()
@@ -247,9 +216,21 @@ namespace DCS_SR_Music.Network
             }
         }
 
-        private void Stream(byte[] audioBytes)
+        private async void Stream(byte[] buffer, TimeSpan currentTime)
         {
-            Broadcast(stationNumber, audioBytes);
+            Logger.Debug($"Music Controller current track time on station {stationNumber} is: {currentTime.ToString()}");
+
+            // Encode as opus bytes
+            int len;
+            var buff = encoder.Encode(buffer, buffer.Length, out len);
+
+            // Create copy with small buffer
+            var encoded = new byte[len];
+            Buffer.BlockCopy(buff, 0, encoded, 0, len);
+
+            Broadcast(encoded, System.DateTime.Now);
+
+            await Task.Run(() => timerTicked(currentTime));
         }
 
         private void timerTicked(TimeSpan time)
