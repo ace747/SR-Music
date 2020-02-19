@@ -126,8 +126,8 @@ namespace DCS_SR_Music.Network
                                 srClient.Position = updatedSrClient.Position;
                                 srClient.LatLngPosition = updatedSrClient.LatLngPosition;
 
-                                Logger.Debug("Recevied Update Client: " + NetworkMessage.MessageType.UPDATE + " From: " +
-                                srClient.Name + " Coalition: " + srClient.Coalition + " Pos: " + srClient.Position);
+                                /* Logger.Debug("Recevied Update Client: " + NetworkMessage.MessageType.UPDATE + " From: " +
+                                srClient.Name + " Coalition: " + srClient.Coalition + " Pos: " + srClient.Position); */
                             }
 
                             if (IsStationClient(updatedSrClient.ClientGuid))
