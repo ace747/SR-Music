@@ -31,13 +31,13 @@ namespace DCS_SR_Music.Network
             StationMusicController.StopMusic += StopMusic;
             StationMusicController.Broadcast += Broadcast;
 
-            StationBroadcaster = new Broadcaster(endPoint);
+            StationBroadcaster = new Broadcaster(StationNumber, endPoint);
             new Thread(() => StationBroadcaster.Start(clientGuid)).Start();
         }
 
-        private void Broadcast(byte[] audioBytes, DateTime requestedBroadcastTime)
+        private void Broadcast(byte[] audioBytes)
         {
-            StationBroadcaster.SendMusicPacket(audioBytes, requestedBroadcastTime);
+            StationBroadcaster.SendMusicPacket(audioBytes);
         }
 
         public void StartMusic()

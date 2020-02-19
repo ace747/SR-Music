@@ -13,6 +13,7 @@ namespace DCS_SR_Music.Network
     public class Broadcaster
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+        private int stationNumber;
         private IPEndPoint serverEndPoint;
         private UdpClient audioUdpClient;
         private bool stop = false;
@@ -23,8 +24,9 @@ namespace DCS_SR_Music.Network
         public event Action<bool, string> UpdateConnectionStatus;
         public bool IsRunning { get; set; } = false;
 
-        public Broadcaster(IPEndPoint endPoint)
+        public Broadcaster(int statNumber, IPEndPoint endPoint)
         {
+            stationNumber = statNumber;
             serverEndPoint = new IPEndPoint(endPoint.Address, endPoint.Port);
         }
 
@@ -109,7 +111,7 @@ namespace DCS_SR_Music.Network
             }
         }
 
-        public void SendMusicPacket(byte[] musicBytes, DateTime requestedBroadcastTime)
+        public void SendMusicPacket(byte[] musicBytes)
         {
             try
             {
@@ -135,9 +137,6 @@ namespace DCS_SR_Music.Network
 
                     // Send audio
                     audioUdpClient.Send(encodedUdpVoicePacketBlufor, encodedUdpVoicePacketBlufor.Length, serverEndPoint);
-
-                    Double elapsedMillisecs = ((TimeSpan)(System.DateTime.Now - requestedBroadcastTime)).TotalMilliseconds;
-                    Logger.Debug($"Broadcaster took {elapsedMillisecs.ToString()}ms to process/send audio packet #{musicClient.PacketNumber} for music client {musicClient.UnitId.ToString()}");
                 }
             }
 
