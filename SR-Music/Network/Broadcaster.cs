@@ -13,19 +13,23 @@ namespace DCS_SR_Music.Network
     public class Broadcaster
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+        private int stationNumber;
         private IPEndPoint serverEndPoint;
         private UdpClient audioUdpClient;
         private bool stop = false;
         private readonly CancellationTokenSource pingStop = new CancellationTokenSource();
         private MusicClient musicClient;
+        private string clientGuid;
 
         // Events
         public event Action<bool, string> UpdateConnectionStatus;
         public bool IsRunning { get; set; } = false;
 
-        public Broadcaster(IPEndPoint endPoint)
+        public Broadcaster(int statNumber, IPEndPoint endPoint, string guid)
         {
+            stationNumber = statNumber;
             serverEndPoint = new IPEndPoint(endPoint.Address, endPoint.Port);
+            clientGuid = guid;
         }
 
         public void UpdateClientRadio(StationClient statClient)
@@ -49,11 +53,11 @@ namespace DCS_SR_Music.Network
             }
         }   
 
-        public void Start(string guid)
+        public void Start()
         {
             musicClient = new MusicClient
             {
-                GuidAsciiBytes = Encoding.ASCII.GetBytes(guid)
+                GuidAsciiBytes = Encoding.ASCII.GetBytes(clientGuid)
             };
 
             audioUdpClient = new UdpClient();
@@ -109,7 +113,7 @@ namespace DCS_SR_Music.Network
             }
         }
 
-        public void SendMusicPacket(byte[] musicBytes, DateTime requestedBroadcastTime)
+        public void SendMusicPacket(byte[] musicBytes)
         {
             try
             {
@@ -135,9 +139,6 @@ namespace DCS_SR_Music.Network
 
                     // Send audio
                     audioUdpClient.Send(encodedUdpVoicePacketBlufor, encodedUdpVoicePacketBlufor.Length, serverEndPoint);
-
-                    Double elapsedMillisecs = ((TimeSpan)(System.DateTime.Now - requestedBroadcastTime)).TotalMilliseconds;
-                    Logger.Debug($"Broadcaster took {elapsedMillisecs.ToString()}ms to process/send audio packet #{musicClient.PacketNumber} for music client {musicClient.UnitId.ToString()}");
                 }
             }
 

@@ -950,7 +950,7 @@ namespace DCS_SR_Music
 
             catch (Exception ex)
             {
-                Logger.Error(ex, "Error encountered when updating track name");
+                Logger.Error(ex, "Error encountered when updating track time");
             }
         }
 
