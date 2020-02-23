@@ -1,18 +1,16 @@
-﻿using DCS_SR_Music.SRS_Helpers;
-using FragLabs.Audio.Codecs;
+﻿using FragLabs.Audio.Codecs;
 using NAudio.Wave;
+using NAudio.Wave.SampleProviders;
 using NLog;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows;
-using System.Windows.Threading;
 using Application = FragLabs.Audio.Codecs.Opus.Application;
 
 namespace DCS_SR_Music.Network
@@ -31,9 +29,10 @@ namespace DCS_SR_Music.Network
         private bool repeat = false;
         private object trackLock = new object();
         private TimeSpan trackTime = TimeSpan.Zero;
+        private readonly TimeSpan threeSeconds = new TimeSpan(0, 0, 3);
 
         private int INPUT_AUDIO_LENGTH_MS = 40;
-        private int INPUT_SAMPLE_RATE = 16000;
+        private int INPUT_SAMPLE_RATE = 48000;
         private int SEGMENT_FRAMES;
         private WaveFormat format;
         private OpusEncoder encoder;
@@ -52,7 +51,7 @@ namespace DCS_SR_Music.Network
 
             SEGMENT_FRAMES = (INPUT_SAMPLE_RATE / 1000) * INPUT_AUDIO_LENGTH_MS;
             format = new WaveFormat(INPUT_SAMPLE_RATE, 16, 1);
-            encoder = OpusEncoder.Create(INPUT_SAMPLE_RATE, 1, Application.Voip);
+            encoder = OpusEncoder.Create(INPUT_SAMPLE_RATE, 1, Application.Audio);
             encoder.ForwardErrorCorrection = false;
         }
 
@@ -104,6 +103,9 @@ namespace DCS_SR_Music.Network
 
                 try
                 {
+                    // Sleep for 100ms between tracks to minimize clipping
+                    Thread.Sleep(100);
+
                     trackPath = GetNextTrack();
                     trackName = trackDictionary[trackPath];
 
@@ -119,15 +121,17 @@ namespace DCS_SR_Music.Network
                     TrackNumberUpdate(stationNumber, GetTrackNumLabel());
 
                     audioSampleQueue.Clear();
-                    Task.Run(() => WriteAudioSampleQueue(trackPath));
-                    ReadAudioSampleQueue();
+                    Task writeTask = Task.Run(() => WriteAudioSampleQueue(trackPath));
+                    Task readTask = Task.Run(() => ReadAudioSampleQueue());
+
+                    Task.WaitAll(writeTask, readTask);
 
                     lock (trackLock)
                     {
                         if (skip)
                         {
                             // Don't skip to previous if more than 3 seconds into song
-                            if (trackTime >= new TimeSpan(0, 0, 3) && audioTracksList.IndexOf(trackPath) > trackIndex)
+                            if (trackTime >= threeSeconds && audioTracksList.IndexOf(trackPath) > trackIndex)
                             {
                                 trackIndex = audioTracksList.IndexOf(trackPath);
                             }
@@ -138,9 +142,6 @@ namespace DCS_SR_Music.Network
                             trackIndex += 1;
                         }
                     }
-
-                    // Allow 100ms for tasks and threads to finish between tasks
-                    Thread.Sleep(100);
                 }
 
                 catch (Exception ex)
@@ -195,63 +196,98 @@ namespace DCS_SR_Music.Network
             lock (trackLock)
             {
                 Logger.Info($"Music Controller repeat enabled on station {stationNumber}");
-                repeat = true;
+                repeat = value;
             }
         }
 
         private void WriteAudioSampleQueue(string trackPath)
         {
-            byte[] buffer = new byte[SEGMENT_FRAMES * 2];
-
-            using (Mp3FileReader mp3 = new Mp3FileReader(trackPath))
+            try
             {
-                using (var conversionStream = new WaveFormatConversionStream(format, mp3))
+                byte[] buffer = new byte[SEGMENT_FRAMES * 2];
+
+                using (Mp3FileReader track = new Mp3FileReader(trackPath))
                 {
-                    using (WaveStream pcm = WaveFormatConversionStream.CreatePcmStream(conversionStream))
+                    using (var conversionStream = new WaveFormatConversionStream(format, track))
                     {
-                        while (playMusic && !skip && (pcm.Read(buffer, 0, buffer.Length)) > 0)
+                        using (WaveStream pcm = WaveFormatConversionStream.CreatePcmStream(conversionStream))
                         {
-                            // Encode as opus bytes
-                            int len;
-                            var buff = encoder.Encode(buffer, buffer.Length, out len);
+                            while (playMusic && !skip && (pcm.Read(buffer, 0, buffer.Length)) > 0)
+                            {
+                                // Encode as opus bytes
+                                int len;
+                                var buff = encoder.Encode(buffer, buffer.Length, out len);
 
-                            // Create copy with small buffer
-                            var encoded = new byte[len];
-                            Buffer.BlockCopy(buff, 0, encoded, 0, len);
+                                // Create copy with small buffer
+                                var encoded = new byte[len];
+                                Buffer.BlockCopy(buff, 0, encoded, 0, len);
 
-                            audioSampleQueue.Enqueue((encoded, pcm.CurrentTime));
+                                audioSampleQueue.Enqueue((encoded, pcm.CurrentTime));
+
+                                Array.Clear(buffer, 0, buffer.Length);
+                            }
                         }
                     }
                 }
+                
+                // Write null audioBytes to signal end of track
+                audioSampleQueue.Enqueue((null, TimeSpan.Zero));
+            }
+
+            catch (Exception ex)
+            {
+                Logger.Error($"Music Controller encountered exception when writing to AudioSampleQueue on station {stationNumber}:  {ex}");
             }
         }
 
         private void ReadAudioSampleQueue()
         {
+            bool endOfTrack = false;
+
             Stopwatch watch = new Stopwatch();
             watch.Start();
 
             while (playMusic && !skip)
             {
+                if (endOfTrack)
+                {
+                    break;
+                }
+
                 if (audioSampleQueue.Count > 0)
                 {
                     var audioSample = audioSampleQueue.Dequeue();
                     var audioBytes = audioSample.Item1;
+
+                    if (audioBytes == null)
+                    {
+                        endOfTrack = true;
+                        continue;
+                    }
+
                     trackTime = audioSample.Item2;
 
                     // Broadcast audio bytes to SRS clients
                     Broadcast(audioBytes);
 
-                    int skipTime = (int)(watch.ElapsedMilliseconds - trackTime.TotalMilliseconds);
-                    Thread.Sleep(INPUT_AUDIO_LENGTH_MS - skipTime);
+                    int timeDiff = (int)(watch.ElapsedMilliseconds - trackTime.TotalMilliseconds);
+                    int sleepTime = INPUT_AUDIO_LENGTH_MS - timeDiff;
+
+                    if (sleepTime > 0)
+                    {
+                         Thread.Sleep(sleepTime);
+                    }
                 }
             }
         }
 
         private void TrackTimerTicked(object source, ElapsedEventArgs e)
         {
-            string time = String.Format("{0:00}:{1:00}", trackTime.Minutes, trackTime.Seconds);
-            TrackTimerUpdate(stationNumber, time);
+            if (playMusic)
+            {
+                string time = String.Format("{0:00}:{1:00}", trackTime.Minutes, trackTime.Seconds);
+                TrackTimerUpdate(stationNumber, time);
+            }
         }
 
         private int ReadTracks()

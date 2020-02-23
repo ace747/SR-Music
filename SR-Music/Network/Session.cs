@@ -90,6 +90,11 @@ namespace DCS_SR_Music.Network
                     {
                         if (ClientSyncer.AllClientsConnected() && sessionConnected == false)
                         {
+                            foreach (Station station in Stations)
+                            {
+                                new Thread(() => station.StationBroadcaster.Start()).Start();
+                            }
+
                             sessionConnected = true;
                             ConnectionEvent(true, "");
                             Logger.Info($"Connected to server @ {serverEndpoint.ToString()}");
@@ -113,6 +118,8 @@ namespace DCS_SR_Music.Network
                                     {
                                         station.StopMusic();
                                     }
+
+                                    station.StationBroadcaster.Stop();
                                 }
 
                                 // Wait for all clients to disconnect before signaling event

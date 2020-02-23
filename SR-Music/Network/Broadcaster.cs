@@ -19,15 +19,17 @@ namespace DCS_SR_Music.Network
         private bool stop = false;
         private readonly CancellationTokenSource pingStop = new CancellationTokenSource();
         private MusicClient musicClient;
+        private string clientGuid;
 
         // Events
         public event Action<bool, string> UpdateConnectionStatus;
         public bool IsRunning { get; set; } = false;
 
-        public Broadcaster(int statNumber, IPEndPoint endPoint)
+        public Broadcaster(int statNumber, IPEndPoint endPoint, string guid)
         {
             stationNumber = statNumber;
             serverEndPoint = new IPEndPoint(endPoint.Address, endPoint.Port);
+            clientGuid = guid;
         }
 
         public void UpdateClientRadio(StationClient statClient)
@@ -51,11 +53,11 @@ namespace DCS_SR_Music.Network
             }
         }   
 
-        public void Start(string guid)
+        public void Start()
         {
             musicClient = new MusicClient
             {
-                GuidAsciiBytes = Encoding.ASCII.GetBytes(guid)
+                GuidAsciiBytes = Encoding.ASCII.GetBytes(clientGuid)
             };
 
             audioUdpClient = new UdpClient();
