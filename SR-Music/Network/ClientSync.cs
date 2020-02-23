@@ -10,6 +10,8 @@ using System.Text;
 using System.IO;
 using Newtonsoft.Json;
 using System.Collections.Concurrent;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace DCS_SR_Music.Network
 {
@@ -23,7 +25,6 @@ namespace DCS_SR_Music.Network
         public readonly SyncedServerSettings serverSettings = SyncedServerSettings.Instance;
 
         // Events
-        public event Action<bool> SecureCoalitionsChanged;
         public event Action<bool, string> UpdateConnectionStatus;
 
         public ClientSync(IPEndPoint endPoint)
@@ -43,7 +44,7 @@ namespace DCS_SR_Music.Network
         {
             foreach (StationClient statClient in StationClients)
             {
-                statClient.Connect();
+                new Thread(statClient.Connect).Start();
             }
         }
 
@@ -73,7 +74,7 @@ namespace DCS_SR_Music.Network
         {
             foreach (StationClient statClient in StationClients)
             {
-                if (statClient.BluforClient.ClientGuid == Guid || statClient.OpforClient.ClientGuid == Guid)
+                if (statClient.Client.ClientGuid == Guid)
                 {
                     return true;
                 }
@@ -86,22 +87,13 @@ namespace DCS_SR_Music.Network
         {
             foreach (StationClient statClient in StationClients)
             {
-                if (statClient.BluforClient.ClientGuid == client.ClientGuid)
+                if (statClient.Client.ClientGuid == client.ClientGuid)
                 {
-                    statClient.BluforClient.LastUpdate = DateTime.Now.Ticks;
-                    statClient.BluforClient.Name = client.Name;
-                    statClient.BluforClient.Coalition = client.Coalition;
-                    statClient.BluforClient.Position = client.Position;
-                    statClient.BluforClient.LatLngPosition = client.LatLngPosition;
-                }
-
-                else if (statClient.OpforClient.ClientGuid == client.ClientGuid)
-                {
-                    statClient.OpforClient.LastUpdate = DateTime.Now.Ticks;
-                    statClient.OpforClient.Name = client.Name;
-                    statClient.OpforClient.Coalition = client.Coalition;
-                    statClient.OpforClient.Position = client.Position;
-                    statClient.OpforClient.LatLngPosition = client.LatLngPosition;
+                    statClient.Client.LastUpdate = DateTime.Now.Ticks;
+                    statClient.Client.Name = client.Name;
+                    statClient.Client.Coalition = client.Coalition;
+                    statClient.Client.Position = client.Position;
+                    statClient.Client.LatLngPosition = client.LatLngPosition;
                 }
             }
         }
@@ -134,8 +126,8 @@ namespace DCS_SR_Music.Network
                                 srClient.Position = updatedSrClient.Position;
                                 srClient.LatLngPosition = updatedSrClient.LatLngPosition;
 
-                                Logger.Debug("Recevied Update Client: " + NetworkMessage.MessageType.UPDATE + " From: " +
-                                srClient.Name + " Coalition: " + srClient.Coalition + " Pos: " + srClient.Position);
+                                /* Logger.Debug("Recevied Update Client: " + NetworkMessage.MessageType.UPDATE + " From: " +
+                                srClient.Name + " Coalition: " + srClient.Coalition + " Pos: " + srClient.Position); */
                             }
 
                             if (IsStationClient(updatedSrClient.ClientGuid))
@@ -263,24 +255,6 @@ namespace DCS_SR_Music.Network
                 UpdateConnectionStatus(false, "client disconnected");
                 return;
             }
-
-            CheckSecureCoalitions();
-        }
-
-        public void CheckSecureCoalitions()
-        {
-            try
-            {
-                bool coalitionAudioSecurity = serverSettings.GetSettingAsBool(ServerSettingsKeys.COALITION_AUDIO_SECURITY);
-                SecureCoalitionsChanged(coalitionAudioSecurity);
-            }
-
-            catch (Exception ex)
-            {
-                Logger.Error(ex, "Exception encountered with secure coalitions");
-                UpdateConnectionStatus(false, "client disconnected");
-            }
-
         }
 
         public static void ShowVersionMistmatchWarning(string serverVersion)

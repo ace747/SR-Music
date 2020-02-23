@@ -20,7 +20,6 @@ namespace DCS_SR_Music.Network
         public bool Quit { get; set; } = false;
         public ClientSync ClientSyncer;
         public List<Station> Stations = new List<Station>();
-        public Broadcaster StationBroadcaster;
 
         // Events
         public event Action<bool, string> ConnectionEvent;
@@ -33,30 +32,26 @@ namespace DCS_SR_Music.Network
 
             ClientSyncer = new ClientSync(endPoint);
             ClientSyncer.UpdateConnectionStatus += UpdateConnectionStatus;
-            ClientSyncer.SecureCoalitionsChanged += SecureCoalitionsChanged;
 
             ClientSyncer.StationClients[0].UpdateConnectionStatus += UpdateConnectionStatus;
             ClientSyncer.StationClients[1].UpdateConnectionStatus += UpdateConnectionStatus;
             ClientSyncer.StationClients[2].UpdateConnectionStatus += UpdateConnectionStatus;
             ClientSyncer.StationClients[3].UpdateConnectionStatus += UpdateConnectionStatus;
 
-            Stations.Add(new Station(0, dir, endPoint));
-            Stations.Add(new Station(1, dir, endPoint));
-            Stations.Add(new Station(2, dir, endPoint));
-            Stations.Add(new Station(3, dir, endPoint));
+            Stations.Add(new Station(0, dir, endPoint, ClientSyncer.StationClients[0].Client.ClientGuid));
+            Stations.Add(new Station(1, dir, endPoint, ClientSyncer.StationClients[1].Client.ClientGuid));
+            Stations.Add(new Station(2, dir, endPoint, ClientSyncer.StationClients[2].Client.ClientGuid));
+            Stations.Add(new Station(3, dir, endPoint, ClientSyncer.StationClients[3].Client.ClientGuid));
 
             Stations[0].UpdateStationRadio += UpdateStationRadio;
             Stations[1].UpdateStationRadio += UpdateStationRadio;
             Stations[2].UpdateStationRadio += UpdateStationRadio;
             Stations[3].UpdateStationRadio += UpdateStationRadio;
 
-            Stations[0].StationMusicController.Broadcast += Broadcast;
-            Stations[1].StationMusicController.Broadcast += Broadcast;
-            Stations[2].StationMusicController.Broadcast += Broadcast;
-            Stations[3].StationMusicController.Broadcast += Broadcast;
-
-            StationBroadcaster = new Broadcaster(endPoint, ClientSyncer.StationClients);
-            StationBroadcaster.UpdateConnectionStatus += UpdateConnectionStatus;
+            Stations[0].StationBroadcaster.UpdateConnectionStatus += UpdateConnectionStatus;
+            Stations[1].StationBroadcaster.UpdateConnectionStatus += UpdateConnectionStatus;
+            Stations[2].StationBroadcaster.UpdateConnectionStatus += UpdateConnectionStatus;
+            Stations[3].StationBroadcaster.UpdateConnectionStatus += UpdateConnectionStatus;
         }
 
         public void Connect()
@@ -85,14 +80,6 @@ namespace DCS_SR_Music.Network
             }
         }
 
-        public void Broadcast(int stationNum, byte[] audioBytes)
-        {
-            string bluforGuid = ClientSyncer.StationClients[stationNum].BluforClient.ClientGuid;
-            string opforGuid = ClientSyncer.StationClients[stationNum].OpforClient.ClientGuid;
-
-            StationBroadcaster.SendMusicPacket(bluforGuid, opforGuid, audioBytes);
-        }
-
         public void UpdateConnectionStatus(bool connected, string message)
         {
             try
@@ -103,9 +90,10 @@ namespace DCS_SR_Music.Network
                     {
                         if (ClientSyncer.AllClientsConnected() && sessionConnected == false)
                         {
-                            var broadcastThread = new Thread(StationBroadcaster.Start);
-                            broadcastThread.IsBackground = true;
-                            broadcastThread.Start();
+                            foreach (Station station in Stations)
+                            {
+                                new Thread(() => station.StationBroadcaster.Start()).Start();
+                            }
 
                             sessionConnected = true;
                             ConnectionEvent(true, "");
@@ -130,9 +118,9 @@ namespace DCS_SR_Music.Network
                                     {
                                         station.StopMusic();
                                     }
-                                }
 
-                                StationBroadcaster.Stop();
+                                    station.StationBroadcaster.Stop();
+                                }
 
                                 // Wait for all clients to disconnect before signaling event
                                 disconnectAlreadyRequested = true;
@@ -166,13 +154,8 @@ namespace DCS_SR_Music.Network
 
         public void UpdateStationRadio(int stationNum, System.Double freq, int mod)
         {
-            var stationClient = ClientSyncer.StationClients[stationNum].UpdateRadioSettings(freq, mod);
-            StationBroadcaster.UpdateClientRadio(stationClient);
-        }
-
-        public void SecureCoalitionsChanged(bool secureCoalitions)
-        {
-            StationBroadcaster.SecureCoalitions = secureCoalitions;
+            var statClient = ClientSyncer.StationClients[stationNum].UpdateRadioSettings(freq, mod);
+            Stations[stationNum].StationBroadcaster.UpdateClientRadio(statClient);
         }
 
         public System.Double VerifyUniqueFrequency(int station, System.Double freq)

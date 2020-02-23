@@ -88,11 +88,11 @@ namespace DCS_SR_Music
                     {
                         station.StopMusic();
                     }
-                }
 
-                if (session.StationBroadcaster.IsRunning)
-                {
-                    session.StationBroadcaster.Stop();
+                    if (station.StationBroadcaster.IsRunning)
+                    {
+                        station.StationBroadcaster.Stop();
+                    }
                 }
 
                 session.Quit = true;
@@ -102,6 +102,20 @@ namespace DCS_SR_Music
             }
 
             base.OnClosing(e);
+        }
+
+        protected override void OnStateChanged(EventArgs e)
+        {
+            if (this.WindowState == System.Windows.WindowState.Normal)
+            {
+                Logger.Debug("MAIN WINDOW RESTORED");
+            }
+            else if (this.WindowState == System.Windows.WindowState.Minimized)
+            {
+                Logger.Debug("MAIN WINDOW MINIMIZED");
+            }
+
+            base.OnStateChanged(e);
         }
 
         private void DisconnectSession()
@@ -790,7 +804,7 @@ namespace DCS_SR_Music
                 switch (station)
                 {
                     case 0:
-                        Application.Current.Dispatcher.Invoke(new Action(() => {
+                        Application.Current.Dispatcher.BeginInvoke(new Action(() => {
                             PlayButton0.IsEnabled = false;
                             TrackLabel0.Visibility = Visibility.Collapsed;
                             TrackNumber0.Visibility = Visibility.Collapsed;
@@ -806,7 +820,7 @@ namespace DCS_SR_Music
                         break;
 
                     case 1:
-                        Application.Current.Dispatcher.Invoke(new Action(() => {
+                        Application.Current.Dispatcher.BeginInvoke(new Action(() => {
                             PlayButton1.IsEnabled = false;
                             TrackLabel1.Visibility = Visibility.Collapsed;
                             TrackNumber1.Visibility = Visibility.Collapsed;
@@ -822,7 +836,7 @@ namespace DCS_SR_Music
                         break;
 
                     case 2:
-                        Application.Current.Dispatcher.Invoke(new Action(() => {
+                        Application.Current.Dispatcher.BeginInvoke(new Action(() => {
                             PlayButton2.IsEnabled = false;
                             TrackLabel2.Visibility = Visibility.Collapsed;
                             TrackNumber2.Visibility = Visibility.Collapsed;
@@ -839,7 +853,7 @@ namespace DCS_SR_Music
 
                     // station 3
                     default:
-                        Application.Current.Dispatcher.Invoke(new Action(() => {
+                        Application.Current.Dispatcher.BeginInvoke(new Action(() => {
                             PlayButton3.IsEnabled = false;
                             TrackLabel3.Visibility = Visibility.Collapsed;
                             TrackNumber3.Visibility = Visibility.Collapsed;
@@ -869,26 +883,26 @@ namespace DCS_SR_Music
                 switch (station)
                 {
                     case 0:
-                        Application.Current.Dispatcher.Invoke(new Action(() => {
+                        Application.Current.Dispatcher.BeginInvoke(new Action(() => {
                             TrackTitle0.Content = name;
                         }));
                         break;
 
                     case 1:
-                        Application.Current.Dispatcher.Invoke(new Action(() => {
+                        Application.Current.Dispatcher.BeginInvoke(new Action(() => {
                             TrackTitle1.Content = name;
                         }));
                         break;
 
                     case 2:
-                        Application.Current.Dispatcher.Invoke(new Action(() => {
+                        Application.Current.Dispatcher.BeginInvoke(new Action(() => {
                             TrackTitle2.Content = name;
                         }));
                         break;
 
                     // station 3
                     default:
-                        Application.Current.Dispatcher.Invoke(new Action(() => {
+                        Application.Current.Dispatcher.BeginInvoke(new Action(() => {
                             TrackTitle3.Content = name;
                         }));
                         break;
@@ -908,26 +922,26 @@ namespace DCS_SR_Music
                 switch (station)
                 {
                     case 0:
-                        Application.Current.Dispatcher.Invoke(new Action(() => {
+                        Application.Current.Dispatcher.BeginInvoke(new Action(() => {
                             Timer0.Content = time;
                         }));
                         break;
 
                     case 1:
-                        Application.Current.Dispatcher.Invoke(new Action(() => {
+                        Application.Current.Dispatcher.BeginInvoke(new Action(() => {
                             Timer1.Content = time;
                         }));
                         break;
 
                     case 2:
-                        Application.Current.Dispatcher.Invoke(new Action(() => {
+                        Application.Current.Dispatcher.BeginInvoke(new Action(() => {
                             Timer2.Content = time;
                         }));
                         break;
 
                     // station 3
                     default:
-                        Application.Current.Dispatcher.Invoke(new Action(() => {
+                        Application.Current.Dispatcher.BeginInvoke(new Action(() => {
                             Timer3.Content = time;
                         }));
                         break;
@@ -936,7 +950,7 @@ namespace DCS_SR_Music
 
             catch (Exception ex)
             {
-                Logger.Error(ex, "Error encountered when updating track name");
+                Logger.Error(ex, "Error encountered when updating track time");
             }
         }
 
@@ -947,26 +961,26 @@ namespace DCS_SR_Music
                 switch (station)
                 {
                     case 0:
-                        Application.Current.Dispatcher.Invoke(new Action(() => {
+                        Application.Current.Dispatcher.BeginInvoke(new Action(() => {
                             TrackNumber0.Content = trackNumberLabel;
                         }));
                         break;
 
                     case 1:
-                        Application.Current.Dispatcher.Invoke(new Action(() => {
+                        Application.Current.Dispatcher.BeginInvoke(new Action(() => {
                             TrackNumber1.Content = trackNumberLabel;
                         }));
                         break;
 
                     case 2:
-                        Application.Current.Dispatcher.Invoke(new Action(() => {
+                        Application.Current.Dispatcher.BeginInvoke(new Action(() => {
                             TrackNumber2.Content = trackNumberLabel;
                         }));
                         break;
 
                     // station 3
                     default:
-                        Application.Current.Dispatcher.Invoke(new Action(() => {
+                        Application.Current.Dispatcher.BeginInvoke(new Action(() => {
                             TrackNumber3.Content = trackNumberLabel;
                         }));
                         break;
