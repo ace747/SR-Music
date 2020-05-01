@@ -109,9 +109,26 @@ namespace DCS_SR_Music.Network
                         // Do nothing for now
                         break;
 
+                    // //////////////////////////// RADIO UPDATE //////////////////////////
+                    case NetworkMessage.MessageType.RADIO_UPDATE:
+                        // Do nothing for now - only needed by server
+                        break;
+
+                    // //////////////////////////// EXTERNAL AWACS //////////////////////////
+                    case NetworkMessage.MessageType.EXTERNAL_AWACS_MODE_PASSWORD:
+                        // Do nothing for now
+                        break;
+
+                    case NetworkMessage.MessageType.EXTERNAL_AWACS_MODE_DISCONNECT:
+                        // Do nothing for now
+                        break;
+
                     // //////////////////////////// UPDATE ////////////////////////////////
                     case NetworkMessage.MessageType.UPDATE:
-                        serverSettings.Decode(serverMessage.ServerSettings);
+                        if (serverMessage.ServerSettings != null)
+                        {
+                            serverSettings.Decode(serverMessage.ServerSettings);
+                        }
 
                         if (allClients.ContainsKey(serverMessage.Client.ClientGuid))
                         {
@@ -228,7 +245,7 @@ namespace DCS_SR_Music.Network
                         break;
 
                     default:
-                        Logger.Error("Recevied unknown message type");
+                        Logger.Warn("Recevied unknown message type");
                         break;
                 }
             }
@@ -260,7 +277,7 @@ namespace DCS_SR_Music.Network
         public static void ShowVersionMistmatchWarning(string serverVersion)
         {
             MessageBox.Show($"The SRS server you're connecting to is incompatible with this Client. " +
-                            $"\n\nMake sure to always run the latest version of the SRS Music Client" +
+                            $"\n\nMake sure to always run the latest version of SR-Music Client" +
                             $"\n\nServer Version: {serverVersion}" +
                             $"\nClient Version: {SRVersion.VERSION}" +
                             $"\nMinimum Version: {SRVersion.MINIMUM_PROTOCOL_VERSION}",

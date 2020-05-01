@@ -1,6 +1,6 @@
 ﻿namespace DCS_SR_Music.SRS_Helpers
 {
-    public struct DcsPosition
+    public struct DCSPosition
     {
         public double x;
         public double y;

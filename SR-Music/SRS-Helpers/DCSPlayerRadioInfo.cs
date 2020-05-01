@@ -10,7 +10,7 @@
         }
 
         public string name = "";
-        private readonly DcsPosition pos = new DcsPosition { x = 0, y = 0, z = 0 };
+        private readonly DCSPosition pos = new DCSPosition { x = 0, y = 0, z = 0 };
         public volatile bool ptt = false;
 
 
@@ -27,28 +27,14 @@
         // Global toggle enabling simultaneous transmission on multiple radios, activated via the AWACS panel
         public bool simultaneousTransmission = true;
 
-        public DCSPlayerRadioInfo(System.Double frequency, int mod)
+        public Transponder iff = new Transponder();
+
+        public DCSPlayerRadioInfo()
         {
-            for (var i = 0; i < 11; i++)
+            for (var i = 0; i < radios.Length; i++)
             {
                 radios[i] = new RadioInformation();
             }
-
-            radios[0].enc = false;
-            radios[0].encKey = 0;
-            radios[0].encMode = 0;
-            radios[0].freqMax = 1.0;
-            radios[0].freqMin = 1.0;
-            radios[0].freq = frequency;
-            radios[0].modulation = (RadioInformation.Modulation) mod;
-            radios[0].name = name;
-            radios[0].secFreq = 0.0;
-            radios[0].volume = 1.0f;
-            radios[0].freqMode = 0;
-            radios[0].volMode = 0;
-            radios[0].expansion = false;
-            radios[0].Station = -1;
-            radios[0].simul = false;
         }
     }
 }
