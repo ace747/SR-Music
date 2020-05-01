@@ -23,5 +23,10 @@ namespace DCS_SR_Music.SRS_Helpers
         public double lat = 0;
         public double lng = 0;
         public double alt = 0;
+
+        public override string ToString()
+        {
+            return $"Pos:[{lat},{lng},{alt}]";
+        }
     }
 }

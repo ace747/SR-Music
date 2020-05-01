@@ -12,7 +12,7 @@ namespace DCS_SR_Music.SRS_Helpers
 
         public int Coalition { get; set; }
 
-        public DcsPosition Position { get; set; }
+        public DCSPosition Position { get; set; }
 
         public DCSLatLngPosition LatLngPosition { get; set; }
 

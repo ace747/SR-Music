@@ -15,6 +15,8 @@ namespace DCS_SR_Music.Helpers
             SERVER_SETTINGS,
             CLIENT_DISCONNECT, // Client disconnected
             VERSION_MISMATCH,
+            EXTERNAL_AWACS_MODE_PASSWORD,
+            EXTERNAL_AWACS_MODE_DISCONNECT
         }
 
         public SRClient Client { get; set; }

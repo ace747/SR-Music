@@ -33,13 +33,19 @@ namespace DCS_SR_Music.Network
             stationNumber = num;
             serverEndpoint = endPoint;
 
+            var name = "SR-MUSIC Station " + (stationNumber + 1).ToString();
+
+            DCSPlayerRadioInfo radioInfo = new DCSPlayerRadioInfo();
+            radioInfo.unit = name;
+
             Client = new SRClient
             {
-                Name = "MUSIC CLIENT " + stationNumber.ToString(),
+                Name = name,
                 Coalition = 2,
                 ClientGuid = ShortGuid.NewGuid().ToString(),
-                Position = new DcsPosition { x = 0, y = 0, z = 0 },
-                LatLngPosition = new DCSLatLngPosition()
+                Position = new DCSPosition { x = 0, y = 0, z = 0 },
+                LatLngPosition = new DCSLatLngPosition(),
+                RadioInfo = radioInfo
             };
         }
 
@@ -220,14 +226,9 @@ namespace DCS_SR_Music.Network
 
         public StationClient UpdateRadioSettings(System.Double freq, int mod)
         {
-            // Radio Information for music broadcast
-            DCSPlayerRadioInfo radioInfo = new DCSPlayerRadioInfo(freq, mod);
-            radioInfo.name = Client.Name;
-            radioInfo.unit = Client.Name;
-            radioInfo.ptt = false;
-
-            // Update clients locally
-            Client.RadioInfo = radioInfo;
+            Client.RadioInfo.radios[0].freq = freq;
+            Client.RadioInfo.radios[0].modulation = (RadioInformation.Modulation) mod;
+            Client.RadioInfo.radios[0].secFreq = 0.0;
 
             // Update radio on server
             sendMessage(new NetworkMessage

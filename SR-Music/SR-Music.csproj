@@ -197,13 +197,19 @@
     <Compile Include="Network\MusicClient.cs" />
     <Compile Include="Network\Session.cs" />
     <Compile Include="Network\StationClient.cs" />
+    <Compile Include="Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
     <Compile Include="SRS-Helpers\DCSLatLngPosition.cs" />
     <Compile Include="SRS-Helpers\DCSPlayerRadioInfo.cs" />
-    <Compile Include="SRS-Helpers\DcsPosition.cs" />
+    <Compile Include="SRS-Helpers\DCSPosition.cs" />
     <Compile Include="SRS-Helpers\RadioInformation.cs" />
     <Compile Include="SRS-Helpers\ServerSettingsKeys.cs" />
     <Compile Include="SRS-Helpers\SRVersion.cs" />
     <Compile Include="SRS-Helpers\SynchedServerSettings.cs" />
+    <Compile Include="SRS-Helpers\Transponder.cs" />
     <Compile Include="SRS-Helpers\UDPVoicePacket.cs" />
     <Compile Include="UI\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
