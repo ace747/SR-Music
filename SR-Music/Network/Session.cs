@@ -97,7 +97,7 @@ namespace DCS_SR_Music.Network
 
                             sessionConnected = true;
                             ConnectionEvent(true, "");
-                            Logger.Info($"Connected to server @ {serverEndpoint.ToString()}");
+                            Logger.Info($"Connected to server @ {serverEndpoint}");
                         }
 
                         else

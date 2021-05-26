@@ -10,8 +10,8 @@ namespace DCS_SR_Music.SRS_Helpers
     {
         // //////////////////////////////////////////////////////////
         // ********* SRS VERSION *********
-        public static readonly string MINIMUM_PROTOCOL_VERSION = "1.8.0.0";
-        public static readonly string VERSION = "1.8.0.1";
+        public static readonly string MINIMUM_PROTOCOL_VERSION = "1.9.0.0";
+        public static readonly string SRS_SUPPORTED_VERSION = "1.9.6.0";
         // //////////////////////////////////////////////////////////
     }
 }
