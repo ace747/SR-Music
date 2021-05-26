@@ -31,7 +31,7 @@ namespace DCS_SR_Music.Helpers
 
         public string Encode()
         {
-            Version = SRVersion.VERSION;
+            Version = SRVersion.SRS_SUPPORTED_VERSION;
             return JsonConvert.SerializeObject(this) + "\n";
         }
     }

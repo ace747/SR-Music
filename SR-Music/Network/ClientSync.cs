@@ -1,16 +1,11 @@
 ﻿using DCS_SR_Music.SRS_Helpers;
 using NLog;
 using System;
-using System.Net.Sockets;
 using System.Collections.Generic;
 using System.Net;
 using System.Windows;
 using DCS_SR_Music.Helpers;
-using System.Text;
-using System.IO;
-using Newtonsoft.Json;
 using System.Collections.Concurrent;
-using System.Threading.Tasks;
 using System.Threading;
 
 namespace DCS_SR_Music.Network
@@ -19,6 +14,7 @@ namespace DCS_SR_Music.Network
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         private static readonly ConcurrentDictionary<string, SRClient> allClients = new ConcurrentDictionary<string, SRClient>();
+        private bool versionMismatch = false;
 
         public List<StationClient> StationClients = new List<StationClient>();
         public string ServerVersion = "Unknown";
@@ -142,9 +138,6 @@ namespace DCS_SR_Music.Network
                                 srClient.Coalition = updatedSrClient.Coalition;
                                 srClient.Position = updatedSrClient.Position;
                                 srClient.LatLngPosition = updatedSrClient.LatLngPosition;
-
-                                /* Logger.Debug("Recevied Update Client: " + NetworkMessage.MessageType.UPDATE + " From: " +
-                                srClient.Name + " Coalition: " + srClient.Coalition + " Pos: " + srClient.Position); */
                             }
 
                             if (IsStationClient(updatedSrClient.ClientGuid))
@@ -239,8 +232,14 @@ namespace DCS_SR_Music.Network
 
                     // //////////////////////////// VERSION MISMATCH ////////////////////////////////
                     case NetworkMessage.MessageType.VERSION_MISMATCH:
-                        Logger.Error($"Version Mismatch Between Client ({SRVersion.VERSION}) & Server ({serverMessage.Version}) - Disconnecting");
-                        ShowVersionMistmatchWarning(serverMessage.Version);
+                        Logger.Error($"Version Mismatch Between Client ({SRVersion.SRS_SUPPORTED_VERSION}) & Server ({serverMessage.Version}) - Disconnecting");
+                        
+                        if (!versionMismatch)
+                        {
+                            ShowVersionMistmatchWarning(serverMessage.Version);
+                        }
+
+                        versionMismatch = true;
                         UpdateConnectionStatus(false, "client disconnected");
                         break;
 
@@ -276,11 +275,9 @@ namespace DCS_SR_Music.Network
 
         public static void ShowVersionMistmatchWarning(string serverVersion)
         {
-            MessageBox.Show($"The SRS server you're connecting to is incompatible with this Client. " +
-                            $"\n\nMake sure to always run the latest version of SR-Music Client" +
+            MessageBox.Show($"The SRS server you're connecting to is incompatible with this SR Music Client. " +
                             $"\n\nServer Version: {serverVersion}" +
-                            $"\nClient Version: {SRVersion.VERSION}" +
-                            $"\nMinimum Version: {SRVersion.MINIMUM_PROTOCOL_VERSION}",
+                            $"\nSupported Version: {SRVersion.SRS_SUPPORTED_VERSION}",
                             "SRS Server Incompatible",
                             MessageBoxButton.OK,
                             MessageBoxImage.Error);

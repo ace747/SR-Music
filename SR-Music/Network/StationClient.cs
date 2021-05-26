@@ -72,7 +72,7 @@ namespace DCS_SR_Music.Network
                     else
                     {
                         UpdateConnectionStatus(false, "connection attempt failed");
-                        Logger.Warn($"Station {stationNumber.ToString()} Client failed to connect to server @ {serverEndpoint.ToString()}");
+                        Logger.Warn($"Station {stationNumber} Client failed to connect to server @ {serverEndpoint}");
                     }
                 }
 
@@ -173,7 +173,7 @@ namespace DCS_SR_Music.Network
         {
             try
             {
-                message.Version = SRVersion.VERSION;
+                message.Version = SRVersion.SRS_SUPPORTED_VERSION;
                 var json = message.Encode();
                 var bytes = Encoding.UTF8.GetBytes(json);
 

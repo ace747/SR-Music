@@ -1,7 +1,6 @@
 ﻿using DCS_SR_Music.SRS_Helpers;
 using NLog;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
@@ -132,7 +131,9 @@ namespace DCS_SR_Music.Network
                         UnitId = musicClient.UnitId,
                         Encryptions = musicClient.Encryptions.ToArray(),
                         Modulations = musicClient.Modulations.ToArray(),
-                        PacketNumber = musicClient.PacketNumber
+                        PacketNumber = musicClient.PacketNumber,
+                        OriginalClientGuidBytes = musicClient.GuidAsciiBytes,
+                        RetransmissionCount = 0
                     };
 
                     var encodedUdpVoicePacketBlufor = udpVoicePacketBlufor.EncodePacket();
